@@ -1,0 +1,12 @@
+# basil examples
+print "hello world"
+
+var i = 10
+
+i = 10 ?
+	print "one"
+|
+i = 15 ? 
+	print "two"
+|
+	print "three"

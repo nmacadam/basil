@@ -1,0 +1,5 @@
+// example code #1
+print "one";
+print true;
+print 2;
+print 2+1;
