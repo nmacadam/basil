@@ -1,5 +1,10 @@
-// example code #1
-print "one";
-print true;
-print 2;
-print 2+1;
+fun fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 2) + fibonacci(n - 1);
+}
+
+for (var i = 0; i < 20; i = i + 1) {
+  print fibonacci(i);
+}
+
+print clock();

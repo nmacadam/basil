@@ -6,6 +6,7 @@ namespace BasilLang
     class Basil
     {
         static readonly Interpreter interpreter = new Interpreter();
+        public static readonly ASTPrinter printer = new ASTPrinter();
         static bool hadError = false;
         static bool hadRuntimeError = false;
 
@@ -60,7 +61,12 @@ namespace BasilLang
             //Console.WriteLine(new ASTPrinter().print(expression));
         }
 
-        public static void error(Token token, String message)
+        public static void error(int line, string message)
+        {
+            report(line, "", message);
+        }
+
+        public static void error(Token token, string message)
         {
             if (token.type == Token.TokenType.EOF)
             {
@@ -82,56 +88,6 @@ namespace BasilLang
         {
             Console.WriteLine($"[line {line}] Error {where} : {message}");
             hadError = true;
-        }
-    }
-
-    public abstract class Stmt
-    {
-        public interface Visitor<R>
-        {
-            //R visitBlockStmt(Block stmt);
-            //R visitClassStmt(Class stmt);
-            R visitExpressionStmt(Expression stmt);
-            //R visitFunctionStmt(Function stmt);
-            //R visitIfStmt(If stmt);
-            R visitPrintStmt(Print stmt);
-            //R visitReturnStmt(Return stmt);
-            //R visitVarStmt(Var stmt);
-            //R visitWhileStmt(While stmt);
-        }
-
-        // Nested Stmt classes here...            
-
-        public abstract R accept<R>(Visitor<R> visitor);
-
-        public class Expression : Stmt
-        {
-            public Expression(Expr expression)
-            {
-                this.expression = expression;
-            }
-
-            public override R accept<R>(Visitor<R> visitor)
-            {
-                return visitor.visitExpressionStmt(this);
-            }
-
-            public readonly Expr expression;
-        }
-
-        public class Print : Stmt
-        {
-            public Print(Expr expression)
-            {
-                this.expression = expression;
-            }
-
-            public override R accept<R>(Visitor<R> visitor)
-            {
-                return visitor.visitPrintStmt(this);
-            }
-
-            public readonly Expr expression;
         }
     }
 }

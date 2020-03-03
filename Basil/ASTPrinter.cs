@@ -6,12 +6,22 @@ namespace BasilLang
     {
         public string print(Expr expression)
         {
-            return expression.accept(this);
+            return "[EXPR]:" + expression.accept(this);
+        }
+
+        public string visitAssignExpr(Expr.Assign expr)
+        {
+            throw new System.NotImplementedException();
         }
 
         public string visitBinaryExpr(Expr.Binary expr)
         {
             return parenthesize(expr.op.lexeme, expr.left, expr.right);
+        }
+
+        public string visitCallExpr(Expr.Call expr)
+        {
+            throw new System.NotImplementedException();
         }
 
         public string visitGroupingExpr(Expr.Grouping expr)
@@ -25,9 +35,19 @@ namespace BasilLang
             return expr.value.ToString();
         }
 
+        public string visitLogicalExpr(Expr.Logical expr)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string visitUnaryExpr(Expr.Unary expr)
         {
             return parenthesize(expr.op.lexeme, expr.right);
+        }
+
+        public string visitVariableExpr(Expr.Variable expr)
+        {
+            return expr.name.ToString();
         }
 
         private string parenthesize(string name, params Expr[] exprs)

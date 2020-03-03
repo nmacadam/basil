@@ -12,7 +12,7 @@
             Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
 
             // Literals
-            Idenfitier, String, Number,
+            Identifier, String, Number,
 
             // Keywords
             And, Class, Else, False, Fun, For, If, Nil, Or, Print, Return, Super, This, True, Var, While, EOF

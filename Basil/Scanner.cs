@@ -17,6 +17,7 @@ namespace BasilLang
             this.source = source;
         }
 
+        // scan all tokens from source string
         public List<Token> scanTokens()
         {
             while(!isAtEnd())
@@ -29,6 +30,7 @@ namespace BasilLang
             return tokens;
         }
 
+        // scan an individual token
         private void scanToken()
         {
             char c = advance();
@@ -76,6 +78,7 @@ namespace BasilLang
                     line++;
                     break;
 
+                // if not a language token, determine what the user has entered and if it is valid
                 default:
                     if (isDigit(c))
                     {
@@ -87,13 +90,13 @@ namespace BasilLang
                     }
                     else
                     {
-                        //Basil.error(line, "Unexpected character.");
-                        Console.WriteLine("TEMP_ERROR::UNEXPECTED CHARACTER");
+                        Basil.error(line, "Unexpected character.");
                     }
                     break;
             }
         }
 
+        // constructs a token with a string literal
         private void makeString () {                                   
             while (peek() != '"' && !isAtEnd()) {                   
               if (peek() == '\n') line++;                           
@@ -102,8 +105,7 @@ namespace BasilLang
 
             // Unterminated string.                                 
             if (isAtEnd()) {
-                //Basil.error(line, "Unterminated string.");              
-                Console.WriteLine("TEMP_ERROR::UNTERMINATED STRING");
+                Basil.error(line, "Unterminated string.");              
                 return;                                               
             }
 
@@ -111,10 +113,11 @@ namespace BasilLang
             advance();
 
             // Trim the surrounding quotes.                         
-            string value = source.Substring(start + 1, (current - 1) - start);
+            string value = source.Substring(start + 1, (current - 1) - (start + 1));
             addToken(Token.TokenType.String, value);                                
         }
 
+        // constructs a token with a numeric literal
         private void makeNumber()
         {
             while (isDigit(peek())) advance();
@@ -129,25 +132,27 @@ namespace BasilLang
             }
 
             addToken(Token.TokenType.Number,
-                float.Parse(source.Substring(start, current - start)));
+                double.Parse(source.Substring(start, current - start)));
         }
 
+        // constructs a token for a keyword if valid
         private void identifier()
         {
             while (isAlphaNumeric(peek())) advance();
 
             // See if the identifier is a reserved word.   
-            String text = source.Substring(start, current - start);
+            string text = source.Substring(start, current - start);
 
             Token.TokenType type;
             if (keywords.ContainsKey(text))
             {
                 type = keywords[text];
             }
-            else type = Token.TokenType.Idenfitier;
+            else type = Token.TokenType.Identifier;
             addToken(type);
         }
 
+        // return if the character is a letter
         private bool isAlpha(char c)
         {
             return (c >= 'a' && c <= 'z') ||
@@ -155,16 +160,20 @@ namespace BasilLang
                     c == '_';
         }
 
+        // return if the character is alphanumeric
         private bool isAlphaNumeric(char c)
         {
             return isAlpha(c) || isDigit(c);
         }
 
+        // return if the character is a digit
         private bool isDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
 
+
+        // conditionally advance if the expected character is the current character 
         private bool match(char expected)
         {
             if (isAtEnd()) return false;
@@ -174,40 +183,47 @@ namespace BasilLang
             return true;
         }
 
+        // return the current character in the source without consuming it
         private char peek()
         {
             if (isAtEnd()) return '\0';
             return source[current];
         }
 
+        // return the next character in the source without consuming it or the previous character
         private char peekNext()
         {
             if (current + 1 >= source.Length) return '\0';
             return source[current + 1];
         }
 
+        // consumes the next character in the source and returns it
         private char advance()
         {
             current++;
             return source[current - 1];
         }
 
+        // creates a token for the current lexeme
         private void addToken(Token.TokenType type)
         {
             addToken(type, null);
         }
 
-        private void addToken(Token.TokenType type, Object literal)
+        // creates a token for the current lexeme, including a literal value
+        private void addToken(Token.TokenType type, object literal)
         {
             string text = source.Substring(start, current - start);
             tokens.Add(new Token(type, text, literal, line));
         }
 
+        // determine if the iterator has reached the end of the source string
         private bool isAtEnd()
         {
             return current >= source.Length;
         }
 
+        // keyword mapping to token type
         private static readonly Dictionary<string, Token.TokenType> keywords = new Dictionary<string, Token.TokenType>
         {
             {"and",    Token.TokenType.And },
