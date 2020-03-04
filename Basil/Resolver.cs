@@ -7,12 +7,22 @@ namespace BasilLang
         private enum FunctionType
         {
             None,
-            Function
+            Function,
+            Initializer,
+            Method
+        }
+
+        private enum ClassType
+        {
+            None,
+            Class,
+            Subclass
         }
 
         private readonly Interpreter interpreter;
         private readonly Stack<Dictionary<string, bool>> scopes = new Stack<Dictionary<string, bool>>();
         private FunctionType currentFunction = FunctionType.None;
+        private ClassType currentClass = ClassType.None;
 
         public Resolver(Interpreter interpreter)
         {
@@ -72,15 +82,7 @@ namespace BasilLang
             var temp = scopes.ToArray();
 
             // array might be in wrong order
-            for (int i = 0; i < temp.Length; i++)
-            {
-                if (temp[i].ContainsKey(name.lexeme))
-                {
-                    interpreter.resolve(expr, temp.Length - 1 - i);
-                    return;
-                }
-            }
-            //for (int i = temp.Length - 1; i >= 0; i--)
+            //for (int i = 0; i < temp.Length; i++)
             //{
             //    if (temp[i].ContainsKey(name.lexeme))
             //    {
@@ -88,6 +90,14 @@ namespace BasilLang
             //        return;
             //    }
             //}
+            for (int i = temp.Length - 1; i >= 0; i--)
+            {
+                if (temp[i].ContainsKey(name.lexeme))
+                {
+                    interpreter.resolve(expr, temp.Length - 1 - i);
+                    return;
+                }
+            }
 
             //for (int i = scopes.Count - 1; i >= 0; i--)
             //{
@@ -141,6 +151,56 @@ namespace BasilLang
             return null;
         }
 
+        //public object visitClassStmt(Stmt.Class stmt)
+        //{
+        //    ClassType enclosingClass = currentClass;
+        //    currentClass = ClassType.Class;
+
+        //    declare(stmt.name);
+        //    define(stmt.name);
+
+        //    if (stmt.superclass != null && stmt.name.lexeme.Equals(stmt.superclass.name.lexeme))
+        //    {
+        //        Basil.error(stmt.superclass.name,
+        //            "A class cannot inherit from itself.");
+        //    }
+
+        //    if (stmt.superclass != null)
+        //    {
+        //        currentClass = ClassType.Subclass;
+        //        // set-current-subclass
+        //        resolve(stmt.superclass);
+        //    }
+
+        //    if (stmt.superclass != null)
+        //    {
+        //        beginScope();
+        //        scopes.Peek()["super"] = true;
+        //    }
+
+        //    beginScope();
+        //    scopes.Peek()["this"] = true;
+
+        //    foreach (Stmt.Function method in stmt.methods)
+        //    {
+        //        FunctionType declaration = FunctionType.Method;
+        //        //> resolver-initializer-type
+        //        if (method.name.lexeme.Equals("init"))
+        //        {
+        //            declaration = FunctionType.Initializer;
+        //        }
+
+        //        //< resolver-initializer-type
+        //        resolveFunction(method, declaration); // [local]
+        //    }
+
+        //    endScope();
+        //    if (stmt.superclass != null) endScope();
+        //    currentClass = enclosingClass;
+
+        //    return null;
+        //}
+
         public object visitCallExpr(Expr.Call expr)
         {
             resolve(expr.callee);
@@ -152,6 +212,12 @@ namespace BasilLang
 
             return null;
         }
+
+        //public object visitGetExpr(Expr.Get expr)
+        //{
+        //    resolve(expr.obj);
+        //    return null;
+        //}
 
         public object visitExpressionStmt(Stmt.Expression stmt)
         {
@@ -194,6 +260,43 @@ namespace BasilLang
             return null;
         }
 
+        //public object visitSetExpr(Expr.Set expr)
+        //{
+        //    resolve(expr.value);
+        //    resolve(expr.obj);
+        //    return null;
+        //}
+
+        //public object visitSuperExpr(Expr.Super expr)
+        //{
+        //    if (currentClass == ClassType.None)
+        //    {
+        //        Basil.error(expr.keyword,
+        //            "Cannot use 'super' outside of a class.");
+        //    }
+        //    else if (currentClass != ClassType.Subclass)
+        //    {
+        //        Basil.error(expr.keyword,
+        //            "Cannot use 'super' in a class with no superclass.");
+        //    }
+
+        //    resolveLocal(expr, expr.keyword);
+        //    return null;
+        //}
+
+        //public object visitThisExpr(Expr.This expr)
+        //{
+        //    if (currentClass == ClassType.None)
+        //    {
+        //        Basil.error(expr.keyword,
+        //            "Cannot use 'this' outside of a class.");
+        //        return null;
+        //    }
+
+        //    resolveLocal(expr, expr.keyword);
+        //    return null;
+        //}
+
         // Statement visiting
 
         public object visitPrintStmt(Stmt.Print stmt)
@@ -211,6 +314,12 @@ namespace BasilLang
 
             if (stmt.value != null)
             {
+                if (currentFunction == FunctionType.Initializer)
+                {
+                    Basil.error(stmt.keyword,
+                        "Cannot return a value from an initializer.");
+                }
+
                 resolve(stmt.value);
             }
 
@@ -226,15 +335,19 @@ namespace BasilLang
         public object visitVariableExpr(Expr.Variable expr)
         {
             // could be a problem
-            if (scopes.Count > 0 && scopes.Peek().ContainsKey(expr.name.lexeme))
+            if (scopes.Count > 0)
             {
-                if (scopes.Count > 0 && scopes.Peek()[expr.name.lexeme] == false)
+                if (scopes.Peek().ContainsKey(expr.name.lexeme))
                 {
-                    Basil.error(expr.name,
-                        "Cannot read local variable in its own initializer.");
+                    if (scopes.Peek()[expr.name.lexeme] == false)
+                    {
+                        Basil.error(expr.name,
+                            "Cannot read local variable in its own initializer.");
+                    }
                 }
+                else Basil.error(expr.name, "Variable not found");
             }
-            
+
 
             resolveLocal(expr, expr.name);
             return null;
