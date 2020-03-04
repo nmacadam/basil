@@ -1,30 +1,24 @@
-<<<<<<< HEAD
-print "hello world";
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
 
-=======
->>>>>>> parent of d313c59... Resolving & Binding
-fun fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 2) + fibonacci(n - 1);
+  showA();
+  var a = "block";
+  showA();
 }
 
-<<<<<<< HEAD
-for (var i = 0; i < 20; i = i + 1) {
-  print fibonacci(i);
-}
-=======
-var clockStart = ticks();
-
-for (var i = 0; i < 20; i = i + 1) {
-  print fibonacci(i);
+var b = "outer";
+{
+  var b = b;
 }
 
-var timeToExecute = ticks() - clockStart;
+return "at top level";
 
-print timeToExecute;
+fun bad() {
+  var c = "first";
+  var c = "second";
+}
 
-print "";
-print clock();
-
-print("print function test");
->>>>>>> parent of d313c59... Resolving & Binding
+bad();

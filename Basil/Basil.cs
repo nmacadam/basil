@@ -57,6 +57,12 @@ namespace BasilLang
                 return;
             }
 
+            Resolver resolver = new Resolver(interpreter);
+            resolver.resolve(statements);
+
+            // Stop if there was a resolution error.
+            if (hadError) return;
+
             interpreter.interpret(statements);
             //Console.WriteLine(new ASTPrinter().print(expression));
         }
@@ -80,7 +86,7 @@ namespace BasilLang
 
         public static void runtimeError(RuntimeError error)
         {
-            Console.WriteLine($"[line {error.token.line}] Error : {error.message}");
+            Console.WriteLine($"{error.Message} \n[line {error.token.line}]");
             hadRuntimeError = true;
         }
 

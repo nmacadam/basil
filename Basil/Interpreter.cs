@@ -6,14 +6,10 @@ namespace BasilLang
     public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
     {
         public readonly Environment globals = new Environment();
-        /*private*/public Environment environment;
+        private Environment environment;
 
-<<<<<<< HEAD
-        /*private*/
-        public readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
+        private readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
 
-=======
->>>>>>> parent of d313c59... Resolving & Binding
         public Interpreter()
         {
             environment = globals;
@@ -21,10 +17,6 @@ namespace BasilLang
             globals.define("clock", new ClockFunction());
             globals.define("ticks", new TickFunction());
             globals.define("print", new PrintFunction());
-
-            globals.define("DEBUG_DUMPLOCALS", new Debug_DumpLocalsFunction(this));
-            globals.define("DEBUG_DUMPGLOBALS", new Debug_DumpGlobalsFunction(this));
-            globals.define("DEBUG_DUMPSCOPE", new Debug_DumpScopeFunction(this));
         }
 
         public void interpret(List<Stmt> statements)
@@ -175,7 +167,20 @@ namespace BasilLang
 
         public object visitVariableExpr(Expr.Variable expr)
         {
-            return environment.get(expr.name);
+            return lookUpVariable(expr.name, expr);
+        }
+
+        private Object lookUpVariable(Token name, Expr expr)
+        {
+            if (locals.ContainsKey(expr))
+            {
+                int distance = locals[expr];
+                return environment.getAt(distance, name.lexeme);
+            }
+            else
+            {
+                return globals.get(name);
+            }
         }
 
         private void checkNumberOperand(Token op, object operand)
@@ -190,9 +195,6 @@ namespace BasilLang
                                    Object left, Object right)
         {
             if (left is double && right is double) return;
-
-            if (left == null) Console.WriteLine("LHS nil");
-            if (right == null) Console.WriteLine("RHS nil");
 
             throw new RuntimeError(op, "Operands must be numbers.");
         }
@@ -260,6 +262,11 @@ namespace BasilLang
             }
         }
 
+        public void resolve(Expr expr, int depth)
+        {
+            locals[expr] = depth;
+        }
+
         public object visitExpressionStmt(Stmt.Expression stmt)
         {
             evaluate(stmt.expression);
@@ -311,7 +318,16 @@ namespace BasilLang
         {
             object value = evaluate(expr.value);
 
-            environment.assign(expr.name, value);
+            if (locals.ContainsKey(expr))
+            {
+                int distance = locals[expr];
+                environment.assignAt(distance, expr.name, value);
+            }
+            else
+            {
+                globals.assign(expr.name, value);
+            }
+
             return value;
         }
 
