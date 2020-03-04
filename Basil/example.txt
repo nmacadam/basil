@@ -1,24 +1,19 @@
-var a = "global";
-{
-  fun showA() {
-    print a;
-  }
-
-  showA();
-  var a = "block";
-  showA();
+fun fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 2) + fibonacci(n - 1);
 }
 
-var b = "outer";
-{
-  var b = b;
+var clockStart = ticks();
+
+for (var i = 0; i < 20; i = i + 1) {
+  print fibonacci(i);
 }
 
-return "at top level";
+var timeToExecute = ticks() - clockStart;
 
-fun bad() {
-  var c = "first";
-  var c = "second";
-}
+print timeToExecute;
 
-bad();
+print "";
+print clock();
+
+print("print function test");

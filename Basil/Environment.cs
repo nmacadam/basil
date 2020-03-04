@@ -57,30 +57,5 @@ namespace BasilLang
 
             values[name] = value;
         }
-
-        public Object getAt(int distance, String name)
-        {
-            if (ancestor(distance).values.ContainsKey(name))
-            {
-                return ancestor(distance).values[name];
-            }
-            else return null;
-        }
-
-        public void assignAt(int distance, Token name, Object value)
-        {
-            ancestor(distance).values[name.lexeme] = value;
-        }
-
-        Environment ancestor(int distance)
-        {
-            Environment environment = this;
-            for (int i = 0; i < distance; i++)
-            {
-                environment = environment.enclosing;
-            }
-
-            return environment;
-        }
     }
 }

@@ -51,7 +51,6 @@
     <Compile Include="BasilCallable.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resolver.cs" />
     <Compile Include="Return.cs" />
     <Compile Include="RuntimeError.cs" />
     <Compile Include="Scanner.cs" />
