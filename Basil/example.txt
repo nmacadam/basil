@@ -1,19 +1,24 @@
-fun fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 2) + fibonacci(n - 1);
+var a = "global";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block";
+  showA();
 }
 
-var clockStart = ticks();
-
-for (var i = 0; i < 20; i = i + 1) {
-  print fibonacci(i);
+var b = "outer";
+{
+  var b = b;
 }
 
-var timeToExecute = ticks() - clockStart;
+return "at top level";
 
-print timeToExecute;
+fun bad() {
+  var c = "first";
+  var c = "second";
+}
 
-print "";
-print clock();
-
-print("print function test");
+bad();

@@ -8,6 +8,8 @@ namespace BasilLang
         public readonly Environment globals = new Environment();
         private Environment environment;
 
+        private readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
+
         public Interpreter()
         {
             environment = globals;
@@ -165,7 +167,20 @@ namespace BasilLang
 
         public object visitVariableExpr(Expr.Variable expr)
         {
-            return environment.get(expr.name);
+            return lookUpVariable(expr.name, expr);
+        }
+
+        private Object lookUpVariable(Token name, Expr expr)
+        {
+            if (locals.ContainsKey(expr))
+            {
+                int distance = locals[expr];
+                return environment.getAt(distance, name.lexeme);
+            }
+            else
+            {
+                return globals.get(name);
+            }
         }
 
         private void checkNumberOperand(Token op, object operand)
@@ -247,6 +262,11 @@ namespace BasilLang
             }
         }
 
+        public void resolve(Expr expr, int depth)
+        {
+            locals[expr] = depth;
+        }
+
         public object visitExpressionStmt(Stmt.Expression stmt)
         {
             evaluate(stmt.expression);
@@ -298,7 +318,16 @@ namespace BasilLang
         {
             object value = evaluate(expr.value);
 
-            environment.assign(expr.name, value);
+            if (locals.ContainsKey(expr))
+            {
+                int distance = locals[expr];
+                environment.assignAt(distance, expr.name, value);
+            }
+            else
+            {
+                globals.assign(expr.name, value);
+            }
+
             return value;
         }
 
