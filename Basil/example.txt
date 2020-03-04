@@ -1,24 +1,64 @@
-var a = "global";
-{
-  fun showA() {
-    print a;
+class Cake {
+  testA()  {
+    if (this == nil) return "nil";
+	else return "instance";
   }
-
-  showA();
-  var a = "block";
-  showA();
+  
+  testB() {
+	if (this == nil) print "cake instance is nil";
+	else print "cake instance is not nil";
+	
+  }
+  
+  testC() {
+	var a = "local";
+	
+	print a;
+  }
+  
+  taste() {
+    var adjective = "delicious";
+	
+	//DEBUG_DUMPSCOPE();
+	
+	print adjective;
+	
+    print "The " + " cake is " + adjective + "!";
+  }
 }
 
-var b = "outer";
+var someMethod;
+
 {
-  var b = b;
+	fun otherMethod()
+	{
+		var words = "hello";
+		print words;
+	}
+	
+	someMethod = otherMethod;
 }
 
-return "at top level";
 
-fun bad() {
-  var c = "first";
-  var c = "second";
-}
+print "(testA: Printing from a method in a different scope)";
+someMethod();
+print "";
 
-bad();
+print "(testB: Printing from cake instance)";
+var cake = Cake();
+print "this == " + cake.testA();
+cake.testB();
+print "";
+
+print "(testC: Check if local variable is not null)";
+cake.testC();
+print "";
+
+print "(Check if get is working)";
+cake.flavor = "German chocolate";
+print cake.flavor;
+print "";
+
+print "(taste: Check if local variable is not null again)";
+cake.taste(); // Prints "The German chocolate cake is delicious!".
+

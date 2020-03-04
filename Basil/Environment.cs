@@ -5,14 +5,23 @@ namespace BasilLang
 {
     public class Environment
     {
-        private readonly Environment enclosing;
+        public readonly Environment enclosing;
 
-        private readonly Dictionary<string, object> values = new Dictionary<string, object>();
+        /*private*/ public readonly Dictionary<string, object> values = new Dictionary<string, object>();
 
         public Environment()
         {
             enclosing = null;
         }
+
+        //~Environment()
+        //{
+        //    Console.WriteLine("CLOSING ENVIRONMENT");
+        //    foreach (var item in values)
+        //    {
+        //        Console.WriteLine($"\t k: {item.Key}\t v: {item.Value}");
+        //    }
+        //}
 
         public Environment(Environment enclosing)
         {
@@ -81,6 +90,17 @@ namespace BasilLang
             }
 
             return environment;
+        }
+
+        public override string ToString()
+        {
+            string result = values.ToString();
+            if (enclosing != null)
+            {
+                result += " -> " + enclosing.ToString();
+            }
+
+            return result;
         }
     }
 }

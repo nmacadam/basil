@@ -7,7 +7,7 @@ namespace BasilLang
         public interface Visitor<R>
         {
             R visitBlockStmt(Block stmt);
-            //R visitClassStmt(Class stmt);
+            R visitClassStmt(Class stmt);
             R visitExpressionStmt(Expression stmt);
             R visitFunctionStmt(Function stmt);
             R visitIfStmt(If stmt);
@@ -153,6 +153,25 @@ namespace BasilLang
 
             public readonly Token keyword;
             public readonly Expr value;
+        }
+
+        public class Class : Stmt
+        {
+            public Class(Token name, Expr.Variable superclass, List<Stmt.Function> methods)
+            {
+                this.name = name;
+                this.superclass = superclass;
+                this.methods = methods;
+            }
+
+            public override R accept<R>(Visitor<R> visitor)
+            {
+                return visitor.visitClassStmt(this);
+            }
+
+            public readonly Token name;
+            public readonly Expr.Variable superclass;
+            public readonly List<Stmt.Function> methods;
         }
     }
 }

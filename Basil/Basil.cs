@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BasilLang
 {
-    class Basil
+    public class Basil
     {
         static readonly Interpreter interpreter = new Interpreter();
         public static readonly ASTPrinter printer = new ASTPrinter();
@@ -22,7 +22,7 @@ namespace BasilLang
             //);
 
             //Console.WriteLine(new ASTPrinter().print(expression));
-
+            
             runFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.txt");
         }
 
@@ -86,7 +86,7 @@ namespace BasilLang
 
         public static void runtimeError(RuntimeError error)
         {
-            Console.WriteLine($"{error.Message} \n[line {error.token.line}]");
+            Console.WriteLine($"[line {error.token.line}] Error : {error.message}");
             hadRuntimeError = true;
         }
 

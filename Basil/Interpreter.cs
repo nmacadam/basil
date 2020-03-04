@@ -6,9 +6,9 @@ namespace BasilLang
     public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
     {
         public readonly Environment globals = new Environment();
-        private Environment environment;
+        /*private*/public Environment environment;
 
-        private readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
+        /*private*/public readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
 
         public Interpreter()
         {
@@ -17,6 +17,10 @@ namespace BasilLang
             globals.define("clock", new ClockFunction());
             globals.define("ticks", new TickFunction());
             globals.define("print", new PrintFunction());
+
+            globals.define("DEBUG_DUMPLOCALS", new Debug_DumpLocalsFunction(this));
+            globals.define("DEBUG_DUMPGLOBALS", new Debug_DumpGlobalsFunction(this));
+            globals.define("DEBUG_DUMPSCOPE", new Debug_DumpScopeFunction(this));
         }
 
         public void interpret(List<Stmt> statements)
@@ -123,6 +127,23 @@ namespace BasilLang
             return function.call(this, arguments);
         }
 
+        public object visitGetExpr(Expr.Get expr)
+        {
+            object obj = evaluate(expr.obj);
+            if (obj is BasilInstance)
+            {
+                return ((BasilInstance)obj).get(expr.name);
+            }
+            else if (obj == null) Console.WriteLine("obj is null");
+            else
+            {
+                Console.WriteLine($"obj is type {obj.GetType()}");
+            }
+
+            throw new RuntimeError(expr.name,
+                "Only instances have properties.");
+        }
+
         // evaluates grouped (parenthesis) expressions
         public object visitGroupingExpr(Expr.Grouping expr)
         {
@@ -147,6 +168,51 @@ namespace BasilLang
             }
 
             return evaluate(expr.right);
+        }
+
+        public object visitSetExpr(Expr.Set expr)
+        {
+            object obj = evaluate(expr.obj);
+
+            if (!(obj is BasilInstance)) {
+                throw new RuntimeError(expr.name, "Only instances have fields.");
+            }
+
+            object value = evaluate(expr.value);
+            ((BasilInstance)obj).set(expr.name, value);
+            return value;
+        }
+
+        public object visitThisExpr(Expr.This expr)
+        {
+            return lookUpVariable(expr.keyword, expr);
+        }
+
+        public object visitSuperExpr(Expr.Super expr)
+        {
+            int distance = locals[expr];
+            BasilClass superclass = (BasilClass)environment.getAt(
+                distance, "super");
+            //> super-find-this
+
+            // "this" is always one level nearer than "super"'s environment.
+            BasilInstance obj = (BasilInstance)environment.getAt(
+                distance - 1, "this");
+            //< super-find-this
+            //> super-find-method
+
+            BasilFunction method = superclass.findMethod(expr.method.lexeme);
+            //> super-no-method
+
+            if (method == null)
+            {
+                throw new RuntimeError(expr.method,
+                    "Undefined property '" + expr.method.lexeme + "'.");
+            }
+
+            //< super-no-method
+            return method.bind(obj);
+            //< super-find-method
         }
 
         // evaluates sub-expression and applies unary operator
@@ -337,6 +403,51 @@ namespace BasilLang
             return null;
         }
 
+        public object visitClassStmt(Stmt.Class stmt)
+        {
+            object superclass = null;
+            if (stmt.superclass != null)
+            {
+                superclass = evaluate(stmt.superclass);
+                if (!(superclass is BasilClass)) {
+                    throw new RuntimeError(stmt.superclass.name,
+                        "Superclass must be a class.");
+                }
+            }
+
+            environment.define(stmt.name.lexeme, null);
+
+            if (stmt.superclass != null)
+            {
+                environment = new Environment(environment);
+                environment.define("super", superclass);
+            }
+
+            Dictionary<string, BasilFunction> methods = new Dictionary<string, BasilFunction>();
+            foreach (Stmt.Function method in stmt.methods)
+            {
+                /* Classes interpret-methods < Classes interpreter-method-initializer
+                      LoxFunction function = new LoxFunction(method, environment);
+                */
+                //> interpreter-method-initializer
+                BasilFunction function = new BasilFunction(method, environment,
+                    method.name.lexeme.Equals("init"));
+                //< interpreter-method-initializer
+                methods[method.name.lexeme] = function;
+            }
+
+            BasilClass klass = new BasilClass(stmt.name.lexeme,
+                (BasilClass)superclass, methods);
+
+            if (superclass != null)
+            {
+                environment = environment.enclosing;
+            }
+
+            environment.assign(stmt.name, klass);
+            return null;
+        }
+
         public object visitIfStmt(Stmt.If stmt)
         {
             if (isTruthy(evaluate(stmt.condition)))
@@ -352,7 +463,7 @@ namespace BasilLang
 
         public object visitFunctionStmt(Stmt.Function stmt)
         {
-            BasilFunction function = new BasilFunction(stmt, environment);
+            BasilFunction function = new BasilFunction(stmt, environment, false);
             environment.define(stmt.name.lexeme, function);
             return null;
         }
