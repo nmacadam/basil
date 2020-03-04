@@ -3,8 +3,17 @@ fun fibonacci(n) {
   return fibonacci(n - 2) + fibonacci(n - 1);
 }
 
+var clockStart = ticks();
+
 for (var i = 0; i < 20; i = i + 1) {
   print fibonacci(i);
 }
 
+var timeToExecute = ticks() - clockStart;
+
+print timeToExecute;
+
+print "";
 print clock();
+
+print("print function test");

@@ -13,6 +13,8 @@ namespace BasilLang
             environment = globals;
 
             globals.define("clock", new ClockFunction());
+            globals.define("ticks", new TickFunction());
+            globals.define("print", new PrintFunction());
         }
 
         public void interpret(List<Stmt> statements)

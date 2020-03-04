@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace BasilLang
 {
@@ -50,9 +51,22 @@ namespace BasilLang
         }
     }
 
-// use anonymous class
+    // use anonymous class
 
-public class ClockFunction : BasilCallable
+    public class ClockFunction : BasilCallable
+    {
+        public int arity()
+        {
+            return 0;
+        }
+
+        public object call(Interpreter interpreter, List<object> arguments)
+        {
+            return (string)System.DateTime.Now.ToString("hh:mm tt");
+        }
+    }
+
+    public class TickFunction : BasilCallable
     {
         public int arity()
         {
@@ -62,6 +76,20 @@ public class ClockFunction : BasilCallable
         public object call(Interpreter interpreter, List<object> arguments)
         {
             return (double)System.Environment.TickCount / 1000.0;
+        }
+    }
+
+    public class PrintFunction : BasilCallable
+    {
+        public int arity()
+        {
+            return 1;
+        }
+
+        public object call(Interpreter interpreter, List<object> arguments)
+        {
+            Console.WriteLine(arguments[0].ToString());
+            return null;
         }
     }
 }

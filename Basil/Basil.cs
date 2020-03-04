@@ -23,7 +23,7 @@ namespace BasilLang
 
             //Console.WriteLine(new ASTPrinter().print(expression));
 
-            runFile(@"C:\Users\nkmac\Desktop\Basil\Basil\example.txt");
+            runFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.txt");
         }
 
         private static void runFile(string path)
