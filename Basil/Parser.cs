@@ -336,7 +336,7 @@ namespace BasilLang
         {
             Expr expr = unary();
 
-            while (match(Token.TokenType.Slash, Token.TokenType.Star))
+            while (match(Token.TokenType.Slash, Token.TokenType.Star, Token.TokenType.Percent))
             {
                 Token op = previous();
                 Expr right = unary();

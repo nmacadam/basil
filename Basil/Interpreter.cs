@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace BasilLang
 {
@@ -11,10 +13,21 @@ namespace BasilLang
         public Interpreter()
         {
             environment = globals;
+            
+            // Define native functions
+            var nativeFunctions = 
+                typeof(NativeFunctions.NativeCallable).Assembly.GetTypes().Where
+                (
+                    t => t.IsClass &&
+                    typeof(NativeFunctions.NativeCallable).IsAssignableFrom(t) && 
+                    (t.GetCustomAttribute(typeof(NativeFunction), false) != null)
+                );
 
-            globals.define("clock", new ClockFunction());
-            globals.define("ticks", new TickFunction());
-            globals.define("print", new PrintFunction());
+            foreach (var item in nativeFunctions)
+            {
+                var method = (NativeFunctions.NativeCallable)Activator.CreateInstance(item);
+                globals.define(method.MethodName, method);
+            }
         }
 
         public void interpret(List<Stmt> statements)
@@ -66,6 +79,16 @@ namespace BasilLang
                         return (string)left + (string)right;
                     }
 
+                    // try to ToString whatever the value is
+                    if (left is string && !(right is string) && right != null)
+                    {
+                        return (string)left + right.ToString();
+                    }
+                    else if (!(left is string) && left != null && right is string)
+                    {
+                        return left.ToString() + (string)right;
+                    }
+
                     if (left is double && right is double)
                     { }
                     else Console.WriteLine("Not Double");
@@ -87,6 +110,9 @@ namespace BasilLang
                 case Token.TokenType.Star:
                     checkNumberOperands(expr.op, left, right);
                     return (double)left * (double)right;
+                case Token.TokenType.Percent:
+                    checkNumberOperands(expr.op, left, right);
+                    return (double)left % (double)right;
                 case Token.TokenType.BangEqual: return !isEqual(left, right);
                 case Token.TokenType.EqualEqual: return isEqual(left, right);
             }

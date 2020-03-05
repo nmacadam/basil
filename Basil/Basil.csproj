@@ -47,8 +47,10 @@
     <Compile Include="Basil.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Expr.cs" />
+    <Compile Include="FFI.cs" />
     <Compile Include="Interpreter.cs" />
     <Compile Include="BasilCallable.cs" />
+    <Compile Include="NativeFunctions.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Return.cs" />

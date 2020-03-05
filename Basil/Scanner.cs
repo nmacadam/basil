@@ -47,7 +47,11 @@ namespace BasilLang
                 case '+': addToken(Token.TokenType.Plus); break;
                 case ';': addToken(Token.TokenType.Semicolon); break;
                 case '*': addToken(Token.TokenType.Star); break;
-                
+                case '%': addToken(Token.TokenType.Percent); break;
+
+                //case '?': addToken(Token.TokenType.If); break;
+                //case '|': addToken(Token.TokenType.Else); break;
+
                 // Single or double characters
                 case '!': addToken(match('=') ? Token.TokenType.BangEqual : Token.TokenType.Bang); break;
                 case '=': addToken(match('=') ? Token.TokenType.EqualEqual : Token.TokenType.Equal); break;
@@ -228,11 +232,11 @@ namespace BasilLang
         {
             {"and",    Token.TokenType.And },
             {"class",  Token.TokenType.Class  },
-            {"else",   Token.TokenType.Else   },
+            {"else",      Token.TokenType.Else   },
             {"false",  Token.TokenType.False  },
             {"for",    Token.TokenType.For    },
             {"fun",    Token.TokenType.Fun    },
-            {"if",     Token.TokenType.If     },
+            {"if",      Token.TokenType.If     },
             {"nil",    Token.TokenType.Nil    },
             {"or",     Token.TokenType.Or     },
             {"print",  Token.TokenType.Print  },
