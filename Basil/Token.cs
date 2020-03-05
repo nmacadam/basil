@@ -5,7 +5,10 @@
         public enum TokenType
         {
             // Single-character tokens
-            LeftParenthesis, RightParenthesis, LeftBrace, RightBrace,
+            LeftParenthesis, RightParenthesis,
+            LeftBrace, RightBrace,
+            //LeftBracket, RightBracket,
+            //LeftAngleBracket, RightAngleBracket,
             Comma, Dot, Minus, Plus, Semicolon, Slash, Star, Percent,
 
             // One or two character tokens

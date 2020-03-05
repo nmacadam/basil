@@ -1,3 +1,6 @@
+import "importCode.bsl"
+import "importCode 2.bsl"
+
 fun fizzbuzz(start, end)
 {
 	for (var i = 0; i < end; i = i + 1)
@@ -18,3 +21,6 @@ print "type: " + getType(in);
 print "type x: " + getType(x);
 
 sayHi("Creator");
+
+helloWorld();
+goodbyeWorld();

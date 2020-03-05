@@ -23,8 +23,8 @@ namespace BasilLang
 
             //Console.WriteLine(new ASTPrinter().print(expression));
 
-            runPrompt();
-            //runFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.bsl");
+            //runPrompt();
+            runFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.bsl");
         }
 
         private static void runPrompt()
@@ -50,13 +50,11 @@ namespace BasilLang
 
         private static void run(string source)
         {
-            Scanner scanner = new Scanner(source);
-            List<Token> tokens = scanner.scanTokens();
+            Importer importer = new Importer(source);
+            string preprocessedSource = importer.import();
 
-            //foreach (var token in tokens)
-            //{
-            //    Console.WriteLine(token);
-            //}
+            Scanner scanner = new Scanner(preprocessedSource);
+            List<Token> tokens = scanner.scanTokens();
 
             Parser parser = new Parser(tokens);
             List<Stmt> statements = parser.parse();

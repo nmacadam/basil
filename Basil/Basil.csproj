@@ -48,6 +48,7 @@
     <Compile Include="Environment.cs" />
     <Compile Include="Expr.cs" />
     <Compile Include="FFI.cs" />
+    <Compile Include="Importer.cs" />
     <Compile Include="Interpreter.cs" />
     <Compile Include="BasilCallable.cs" />
     <Compile Include="NativeFunctions.cs" />

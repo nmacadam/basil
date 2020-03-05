@@ -41,6 +41,8 @@ namespace BasilLang
                 case ')': addToken(Token.TokenType.RightParenthesis); break;
                 case '{': addToken(Token.TokenType.LeftBrace); break;
                 case '}': addToken(Token.TokenType.RightBrace); break;
+                //case '[': addToken(Token.TokenType.LeftBracket); break;
+                //case ']': addToken(Token.TokenType.RightBracket); break;
                 case ',': addToken(Token.TokenType.Comma); break;
                 case '.': addToken(Token.TokenType.Dot); break;
                 case '-': addToken(Token.TokenType.Minus); break;
@@ -230,13 +232,13 @@ namespace BasilLang
         // keyword mapping to token type
         private static readonly Dictionary<string, Token.TokenType> keywords = new Dictionary<string, Token.TokenType>
         {
-            {"and",    Token.TokenType.And },
+            {"and",    Token.TokenType.And    },
             {"class",  Token.TokenType.Class  },
-            {"else",      Token.TokenType.Else   },
+            {"else",   Token.TokenType.Else   },
             {"false",  Token.TokenType.False  },
             {"for",    Token.TokenType.For    },
             {"fun",    Token.TokenType.Fun    },
-            {"if",      Token.TokenType.If     },
+            {"if",     Token.TokenType.If     },
             {"nil",    Token.TokenType.Nil    },
             {"or",     Token.TokenType.Or     },
             {"print",  Token.TokenType.Print  },
