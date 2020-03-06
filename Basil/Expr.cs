@@ -5,23 +5,23 @@ namespace BasilLang
     public abstract class Expr
     {
         // allows defining methods for handling different expressions without modifying their code
-        public interface Visitor<R>
+        public interface IExprVisitor<R>
         {
             R VisitAssignExpr(Assign expr);
             R VisitBinaryExpr(Binary expr);
             R VisitCallExpr(Call expr);
-            //R visitGetExpr(Get expr);
+            R VisitGetExpr(Get expr);
             R VisitGroupingExpr(Grouping expr);
             R VisitLiteralExpr(Literal expr);
             R VisitLogicalExpr(Logical expr);
-            //R visitSetExpr(Set expr);
-            //R visitSuperExpr(Super expr);
-            //R visitThisExpr(This expr);
+            R VisitSetExpr(Set expr);
+            R VisitSuperExpr(Super expr);
+            R VisitThisExpr(This expr);
             R VisitUnaryExpr(Unary expr);
             R VisitVariableExpr(Variable expr);
         }
 
-        public abstract R Accept<R>(Visitor<R> visitor);
+        public abstract R Accept<R>(IExprVisitor<R> visitor);
 
         
         public class Assign : Expr
@@ -32,7 +32,7 @@ namespace BasilLang
                 this.value = value;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitAssignExpr(this);
             }
@@ -51,7 +51,7 @@ namespace BasilLang
                 this.right = right;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitBinaryExpr(this);
             }
@@ -68,7 +68,7 @@ namespace BasilLang
                 this.expression = expression;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitGroupingExpr(this);
             }
@@ -83,7 +83,7 @@ namespace BasilLang
                 this.value = value;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitLiteralExpr(this);
             }
@@ -99,7 +99,7 @@ namespace BasilLang
                 this.right = right;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitUnaryExpr(this);
             }
@@ -115,7 +115,7 @@ namespace BasilLang
                 this.name = name;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitVariableExpr(this);
             }
@@ -133,7 +133,7 @@ namespace BasilLang
                 this.right = right;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitLogicalExpr(this);
             }
@@ -152,7 +152,7 @@ namespace BasilLang
                 this.arguments = arguments;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IExprVisitor<R> visitor)
             {
                 return visitor.VisitCallExpr(this);
             }
@@ -160,6 +160,70 @@ namespace BasilLang
             public readonly Expr callee;
             public readonly Token paren;
             public readonly List<Expr> arguments;
+        }
+
+        public class Get : Expr
+        {
+            public Expr Objekt { get; }
+            public Token Name { get; }
+            public Get(Expr objekt, Token name)
+            {
+                Objekt = objekt;
+                Name = name;
+            }
+
+            public override T Accept<T>(IExprVisitor<T> visitor)
+            {
+                return visitor.VisitGetExpr(this);
+            }
+        }
+
+        public class Set : Expr
+        {
+            public Expr Objekt { get; }
+            public Token Name { get; }
+            public Expr Value { get; }
+            public Set(Expr objekt, Token name, Expr value)
+            {
+                Objekt = objekt;
+                Name = name;
+                Value = value;
+            }
+
+            public override T Accept<T>(IExprVisitor<T> visitor)
+            {
+                return visitor.VisitSetExpr(this);
+            }
+        }
+
+        public class Super : Expr
+        {
+            public Token Keyword { get; }
+            public Token Method { get; }
+            public Super(Token keyword, Token method)
+            {
+                Keyword = keyword;
+                Method = method;
+            }
+
+            public override T Accept<T>(IExprVisitor<T> visitor)
+            {
+                return visitor.VisitSuperExpr(this);
+            }
+        }
+
+        public class This : Expr
+        {
+            public Token Keyword { get; }
+            public This(Token keyword)
+            {
+                Keyword = keyword;
+            }
+
+            public override T Accept<T>(IExprVisitor<T> visitor)
+            {
+                return visitor.VisitThisExpr(this);
+            }
         }
     }
 }

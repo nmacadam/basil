@@ -8,7 +8,7 @@ namespace BasilLang
 
     namespace NativeFunctions
     {
-        public interface NativeCallable : BasilCallable
+        public interface NativeCallable : ICallable
         {
             string MethodName { get; }
         }

@@ -5,18 +5,40 @@ namespace BasilLang
 {
     public class Environment
     {
-        private readonly Environment enclosing;
+        public Environment Enclosing { get; }
 
         private readonly Dictionary<string, object> values = new Dictionary<string, object>();
 
         public Environment()
         {
-            enclosing = null;
+            Enclosing = null;
         }
 
         public Environment(Environment enclosing)
         {
-            this.enclosing = enclosing;
+            Enclosing = enclosing;
+        }
+
+        public void Define(string name, object value)
+        {
+            /* this syntax overwrites an existing name or adds a new one
+              .Add() throws an exception if the name already exists */
+            values[name] = value;
+        }
+
+        public object GetAt(int distance, string name)
+        {
+            return Ancestor(distance).values[name];
+        }
+
+        private Environment Ancestor(int distance)
+        {
+            Environment environment = this;
+            for (int i = 0; i < distance; i++)
+            {
+                environment = environment.Enclosing;
+            }
+            return environment;
         }
 
         public object Get(Token name)
@@ -25,37 +47,31 @@ namespace BasilLang
             {
                 return values[name.lexeme];
             }
-
-            if (enclosing != null) return enclosing.Get(name);
-
-            throw new RuntimeError(name,
-                "Undefined variable '" + name.lexeme + "'.");
+            if (Enclosing != null)
+            {
+                return Enclosing.Get(name);
+            }
+            throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
         }
 
-        public void Assign(Token name, Object value)
+        public void AssignAt(int distance, Token name, object value)
+        {
+            Ancestor(distance).values[name.lexeme] = value;
+        }
+
+        public void Assign(Token name, object value)
         {
             if (values.ContainsKey(name.lexeme))
             {
-                //values.Add(name.lexeme, value);
                 values[name.lexeme] = value;
                 return;
             }
-
-            if (enclosing != null)
+            if (Enclosing != null)
             {
-                enclosing.Assign(name, value);
+                Enclosing.Assign(name, value);
                 return;
             }
-
-            throw new RuntimeError(name,
-                "Undefined variable '" + name.lexeme + "'.");
-        }
-
-        public void Define(string name, object value)
-        {
-            //values.Add(name, value);
-
-            values[name] = value;
+            throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
         }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace BasilLang
 {
-    class ASTPrinter : Expr.Visitor<string>
+    class ASTPrinter : Expr.IExprVisitor<string>
     {
         public string print(Expr expression)
         {
@@ -24,6 +24,11 @@ namespace BasilLang
             throw new System.NotImplementedException();
         }
 
+        public string VisitGetExpr(Expr.Get expr)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string VisitGroupingExpr(Expr.Grouping expr)
         {
             return Parenthesize("group", expr.expression);
@@ -36,6 +41,21 @@ namespace BasilLang
         }
 
         public string VisitLogicalExpr(Expr.Logical expr)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string VisitSetExpr(Expr.Set expr)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string VisitSuperExpr(Expr.Super expr)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string VisitThisExpr(Expr.This expr)
         {
             throw new System.NotImplementedException();
         }

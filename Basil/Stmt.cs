@@ -4,10 +4,10 @@ namespace BasilLang
 {
     public abstract class Stmt
     {
-        public interface Visitor<R>
+        public interface IStmtVisitor<R>
         {
             R VisitBlockStmt(Block stmt);
-            //R visitClassStmt(Class stmt);
+            R VisitClassStmt(Class stmt);
             R VisitExpressionStmt(Expression stmt);
             R VisitFunctionStmt(Function stmt);
             R VisitIfStmt(If stmt);
@@ -19,21 +19,21 @@ namespace BasilLang
 
         // Nested Stmt classes here...            
 
-        public abstract R Accept<R>(Visitor<R> visitor);
+        public abstract R Accept<R>(IStmtVisitor<R> visitor);
 
         public class Block : Stmt
         {
             public Block(List<Stmt> statement)
             {
-                this.statements = statement;
+                this.Statements = statement;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitBlockStmt(this);
             }
 
-            public readonly List<Stmt> statements;
+            public readonly List<Stmt> Statements;
         }
 
         public class Expression : Stmt
@@ -43,7 +43,7 @@ namespace BasilLang
                 this.expression = expression;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitExpressionStmt(this);
             }
@@ -58,7 +58,7 @@ namespace BasilLang
                 this.expression = expression;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitPrintStmt(this);
             }
@@ -74,7 +74,7 @@ namespace BasilLang
                 this.initializer = initializer;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitVarStmt(this);
             }
@@ -92,7 +92,7 @@ namespace BasilLang
                 this.elseBranch = elseBranch;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitIfStmt(this);
             }
@@ -110,7 +110,7 @@ namespace BasilLang
                 this.body = body;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitWhileStmt(this);
             }
@@ -128,7 +128,7 @@ namespace BasilLang
                 this.body = body;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitFunctionStmt(this);
             }
@@ -146,13 +146,31 @@ namespace BasilLang
                 this.value = value;
             }
 
-            public override R Accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(IStmtVisitor<R> visitor)
             {
                 return visitor.VisitReturnStmt(this);
             }
 
             public readonly Token keyword;
             public readonly Expr value;
+        }
+
+        public class Class : Stmt
+        {
+            public Token Name { get; }
+            public Expr Superclass { get; }
+            public List<Stmt.Function> Methods { get; }
+            public Class(Token name, Expr superclass, List<Stmt.Function> methods)
+            {
+                Name = name;
+                Superclass = superclass;
+                Methods = methods;
+            }
+
+            public override T Accept<T>(IStmtVisitor<T> visitor)
+            {
+                return visitor.VisitClassStmt(this);
+            }
         }
     }
 }

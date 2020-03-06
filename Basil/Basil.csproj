@@ -45,15 +45,19 @@
   <ItemGroup>
     <Compile Include="ASTPrinter.cs" />
     <Compile Include="Basil.cs" />
+    <Compile Include="BasilClass.cs" />
+    <Compile Include="BasilFunction.cs" />
+    <Compile Include="BasilInstance.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Expr.cs" />
     <Compile Include="FFI.cs" />
     <Compile Include="Importer.cs" />
     <Compile Include="Interpreter.cs" />
-    <Compile Include="BasilCallable.cs" />
+    <Compile Include="ICallable.cs" />
     <Compile Include="NativeFunctions.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Resolver.cs" />
     <Compile Include="Return.cs" />
     <Compile Include="RuntimeError.cs" />
     <Compile Include="Scanner.cs" />

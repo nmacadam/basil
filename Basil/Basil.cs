@@ -14,6 +14,8 @@ namespace BasilLang
         {
             //runPrompt();
             RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.bsl");
+            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\cake.bsl");
+            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\superclass.bsl");
         }
 
         private static void RunPrompt()
@@ -54,6 +56,11 @@ namespace BasilLang
                 Console.WriteLine("Encountered error.");
                 return;
             }
+
+            Resolver resolver = new Resolver(interpreter);
+            resolver.Resolve(statements);
+
+            if (hadError) return;
 
             interpreter.Interpret(statements);
             //Console.WriteLine(new ASTPrinter().print(expression));

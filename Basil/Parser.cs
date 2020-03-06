@@ -39,6 +39,7 @@ namespace BasilLang
         {
             try
             {
+                if (Match(Token.TokenType.Class)) return ClassDeclaration();
                 if (Match(Token.TokenType.Fun)) return Function("function");
                 if (Match(Token.TokenType.Var)) return VarDeclaration();
 
@@ -49,6 +50,25 @@ namespace BasilLang
                 Synchronize();
                 return null;
             }
+        }
+
+        private Stmt ClassDeclaration()
+        {
+            Token name = Consume(Token.TokenType.Identifier, "Expect class name.");
+            Expr superclass = null;
+            if (Match(Token.TokenType.Less))
+            {
+                Consume(Token.TokenType.Identifier, "Expect superclass name.");
+                superclass = new Expr.Variable(Previous());
+            }
+            Consume(Token.TokenType.LeftBrace, "Expect '{' before class body.");
+            List<Stmt.Function> methods = new List<Stmt.Function>();
+            while (!Check(Token.TokenType.RightBrace) && !IsAtEnd())
+            {
+                methods.Add(Function("method"));
+            }
+            Consume(Token.TokenType.RightBrace, "Expect '}' after class body.");
+            return new Stmt.Class(name, superclass, methods);
         }
 
         private Stmt VarDeclaration()
@@ -240,20 +260,22 @@ namespace BasilLang
         private Expr Assignment()
         {
             Expr expr = Or();
-
             if (Match(Token.TokenType.Equal))
             {
                 Token equals = Previous();
                 Expr value = Assignment();
-
-                if (expr is Expr.Variable) {
-                    Token name = ((Expr.Variable)expr).name;
+                if (expr is Expr.Variable v)
+                {
+                    Token name = v.name;
                     return new Expr.Assign(name, value);
                 }
-
+                else if (expr is Expr.Get)
+                {
+                    Expr.Get get = (Expr.Get)expr;
+                    return new Expr.Set(get.Objekt, get.Name, value);
+                }
                 Error(equals, "Invalid assignment target.");
             }
-
             return expr;
         }
 
@@ -382,19 +404,22 @@ namespace BasilLang
         private Expr Call()
         {
             Expr expr = Primary();
-
             while (true)
             {
                 if (Match(Token.TokenType.LeftParenthesis))
                 {
                     expr = FinishCall(expr);
                 }
+                else if (Match(Token.TokenType.Dot))
+                {
+                    Token name = Consume(Token.TokenType.Identifier, "Expect property name after '.'.");
+                    expr = new Expr.Get(expr, name);
+                }
                 else
                 {
                     break;
                 }
             }
-
             return expr;
         }
 
@@ -410,6 +435,17 @@ namespace BasilLang
             {
                 return new Expr.Literal(Previous().literal);
             }
+
+            if (Match(Token.TokenType.Super))
+            {
+                Token keyword = Previous();
+                Consume(Token.TokenType.Dot, "Expect '.' after 'super'.");
+                Token method = Consume(Token.TokenType.Identifier,
+                    "Expect superclass method name.");
+                return new Expr.Super(keyword, method);
+            }
+
+            if (Match(Token.TokenType.This)) return new Expr.This(Previous());
 
             if (Match(Token.TokenType.Identifier))
             {

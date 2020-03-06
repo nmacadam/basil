@@ -5,10 +5,12 @@ using System.Reflection;
 
 namespace BasilLang
 {
-    public class Interpreter : Expr.Visitor<object>, Stmt.Visitor<object>
+    public class Interpreter : Expr.IExprVisitor<object>, Stmt.IStmtVisitor<object>
     {
         public readonly Environment globals = new Environment();
         private Environment environment;
+        
+        private readonly Dictionary<Expr, int> locals = new Dictionary<Expr, int>();
 
         public Interpreter()
         {
@@ -131,12 +133,12 @@ namespace BasilLang
                 arguments.Add(Evaluate(argument));
             }
 
-            if (!(callee is BasilCallable)) {
+            if (!(callee is ICallable)) {
                 throw new RuntimeError(expr.paren,
                     "Can only call functions and classes.");
             }
 
-            BasilCallable function = (BasilCallable)callee;
+            ICallable function = (ICallable)callee;
             if (arguments.Count != function.Arity())
             {
                 throw new RuntimeError(expr.paren, "Expected " +
@@ -173,6 +175,48 @@ namespace BasilLang
             return Evaluate(expr.right);
         }
 
+        public object VisitGetExpr(Expr.Get expr)
+        {
+            object objekt = Evaluate(expr.Objekt);
+            if (objekt is BasilInstance)
+            {
+                return ((BasilInstance)objekt).Get(expr.Name);
+            }
+            throw new RuntimeError(expr.Name, "Only instances have properties.");
+        }
+
+        public object VisitSetExpr(Expr.Set expr)
+        {
+            object objekt = Evaluate(expr.Objekt);
+            if (!(objekt is BasilInstance))
+            {
+                throw new RuntimeError(expr.Name, "Only instances have fields.");
+            }
+
+            object value = Evaluate(expr.Value);
+            ((BasilInstance)objekt).Set(expr.Name, value);
+            return value;
+        }
+
+        public object VisitSuperExpr(Expr.Super expr)
+        {
+            int distance = locals[expr];
+            BasilClass superclass = (BasilClass)environment.GetAt(distance, "super");
+            // "this" is always one level nearer than "super"'s environment.
+            BasilInstance objekt = (BasilInstance)environment.GetAt(distance - 1, "this");
+            BasilFunction method = superclass.FindMethod(objekt, expr.Method.lexeme);
+            if (method == null)
+            {
+                throw new RuntimeError(expr.Method, $"Undefined property '{expr.Method.lexeme}'.");
+            }
+            return method;
+        }
+
+        public object VisitThisExpr(Expr.This expr)
+        {
+            return LookUpVariable(expr.Keyword, expr);
+        }
+
         // evaluates sub-expression and applies unary operator
         public object VisitUnaryExpr(Expr.Unary expr)
         {
@@ -191,7 +235,16 @@ namespace BasilLang
 
         public object VisitVariableExpr(Expr.Variable expr)
         {
-            return environment.Get(expr.name);
+            return LookUpVariable(expr.name, expr);
+        }
+
+        private object LookUpVariable(Token name, Expr expr)
+        {
+            if (locals.TryGetValue(expr, out int distance))
+            {
+                return environment.GetAt(distance, name.lexeme);
+            }
+            return globals.Get(name);
         }
 
         private void CheckNumberOperand(Token op, object operand)
@@ -256,6 +309,11 @@ namespace BasilLang
             stmt.Accept(this);
         }
 
+        public void Resolve(Expr expr, int depth)
+        {
+            locals.Add(expr, depth);
+        }
+
         public void ExecuteBlock(List<Stmt> statements, Environment environment)
         {
             Environment previous = this.environment;
@@ -271,6 +329,32 @@ namespace BasilLang
             {
                 this.environment = previous;
             }
+        }
+
+        public object VisitClassStmt(Stmt.Class stmt)
+        {
+            environment.Define(stmt.Name.lexeme, null);
+            object superclass = null;
+            if (stmt.Superclass != null)
+            {
+                superclass = Evaluate(stmt.Superclass);
+                if (!(superclass is BasilClass))
+                {
+                    throw new RuntimeError(stmt.Name, "Superclass must be a class.");
+                }
+                environment = new Environment(environment);
+                environment.Define("super", superclass);
+            }
+            Dictionary<string, BasilFunction> methods = new Dictionary<string, BasilFunction>();
+            foreach (var method in stmt.Methods)
+            {
+                BasilFunction function = new BasilFunction(method, environment, method.name.lexeme.Equals("init"));
+                methods.Add(method.name.lexeme, function);
+            }
+            BasilClass klass = new BasilClass(stmt.Name.lexeme, (BasilClass)superclass, methods);
+            if (superclass != null) environment = environment.Enclosing;
+            environment.Assign(stmt.Name, klass);
+            return null;
         }
 
         public object VisitExpressionStmt(Stmt.Expression stmt)
@@ -323,14 +407,20 @@ namespace BasilLang
         public object VisitAssignExpr(Expr.Assign expr)
         {
             object value = Evaluate(expr.value);
-
-            environment.Assign(expr.name, value);
+            if (locals.TryGetValue(expr, out int distance))
+            {
+                environment.AssignAt(distance, expr.name, value);
+            }
+            else
+            {
+                globals.Assign(expr.name, value);
+            }
             return value;
         }
 
         public object VisitBlockStmt(Stmt.Block stmt)
         {
-            ExecuteBlock(stmt.statements, new Environment(environment));
+            ExecuteBlock(stmt.Statements, new Environment(environment));
             return null;
         }
 
@@ -349,7 +439,7 @@ namespace BasilLang
 
         public object VisitFunctionStmt(Stmt.Function stmt)
         {
-            BasilFunction function = new BasilFunction(stmt, environment);
+            BasilFunction function = new BasilFunction(stmt, environment, false);
             environment.Define(stmt.name.lexeme, function);
             return null;
         }
