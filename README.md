@@ -1,5 +1,5 @@
 # basil
-a dynamically typed, interpreted scripting language (and C# interpreter!)
+a dynamically typed, interpreted scripting language (and interpreter written in C#!)
 
 ### ...ok, but why?
 Basil is a fully-featured, dynamically typed, interpreted ~~mouthful~~ scripting language and C# interpreter designed with user-extensibility in mind.  Created to be a companion to C# game development environments (notably, Unity), to be used to create powerful debugging and/or modding tools.  
