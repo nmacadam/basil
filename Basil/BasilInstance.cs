@@ -12,6 +12,8 @@ namespace BasilLang
             this.klass = klass;
         }
 
+        public BasilClass GetClass() { return klass; }
+
         public object Get(Token name)
         {
             if (fields.ContainsKey(name.lexeme))

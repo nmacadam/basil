@@ -15,6 +15,8 @@ namespace BasilLang
             this.isInitializer = isInitializer;
         }
 
+        public string GetName() { return declaration.name.lexeme; }
+
         public int Arity()
         {
             return declaration.parameters.Count;

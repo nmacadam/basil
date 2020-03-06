@@ -12,8 +12,8 @@ namespace BasilLang
 
         static void Main(string[] args)
         {
-            //runPrompt();
-            RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.bsl");
+            RunPrompt();
+            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\benchmark.bsl");
             //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\cake.bsl");
             //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\superclass.bsl");
         }

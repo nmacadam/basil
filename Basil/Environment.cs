@@ -54,6 +54,19 @@ namespace BasilLang
             throw new RuntimeError(name, $"Undefined variable '{name.lexeme}'.");
         }
 
+        public object Has(string lexeme)
+        {
+            if (values.ContainsKey(lexeme))
+            {
+                return values[lexeme];
+            }
+            if (Enclosing != null)
+            {
+                return Enclosing.Has(lexeme);
+            }
+            return null;
+        }
+
         public void AssignAt(int distance, Token name, object value)
         {
             Ancestor(distance).values[name.lexeme] = value;
