@@ -12,88 +12,77 @@ namespace BasilLang
 
         static void Main(string[] args)
         {
-            //Expression expression = new Expression.Binary(
-            //    new Expression.Unary(
-            //    new Token(Token.TokenType.Minus, "-", null, 1),
-            //    new Expression.Literal(123)),
-            //    new Token(Token.TokenType.Star, "*", null, 1),
-            //    new Expression.Grouping(
-            //    new Expression.Literal(45.67))
-            //);
-
-            //Console.WriteLine(new ASTPrinter().print(expression));
-
             //runPrompt();
-            runFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.bsl");
+            RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\example.bsl");
         }
 
-        private static void runPrompt()
+        private static void RunPrompt()
         {
             for (; ; )
             {
                 Console.Write("> ");
-                run(Console.ReadLine());
+                Run(Console.ReadLine());
                 hadError = false;
             }
         }
 
-        private static void runFile(string path)
+        private static void RunFile(string path)
         {
             string text = System.IO.File.ReadAllText(path);
 
-            run(text);
+            Run(text);
 
-            // Indicate an error in the exit code.           
+            // Indicate an error in the exit code.
             if (hadError) { }
             if (hadRuntimeError) { }
         }
 
-        private static void run(string source)
+        private static void Run(string source)
         {
             Importer importer = new Importer(source);
-            string preprocessedSource = importer.import();
+            string preprocessedSource = importer.Process();
 
             Scanner scanner = new Scanner(preprocessedSource);
-            List<Token> tokens = scanner.scanTokens();
+            List<Token> tokens = scanner.ScanTokens();
 
             Parser parser = new Parser(tokens);
-            List<Stmt> statements = parser.parse();
+            List<Stmt> statements = parser.Parse();
 
-            // Stop if there was a syntax error.                   
+            // Stop if there was a syntax error.
             if (hadError)
             {
                 Console.WriteLine("Encountered error.");
                 return;
             }
 
-            interpreter.interpret(statements);
+            interpreter.Interpret(statements);
             //Console.WriteLine(new ASTPrinter().print(expression));
         }
 
-        public static void error(int line, string message)
+        public static void Error(int line, string message)
         {
-            report(line, "", message);
+            Report(line, "", message);
         }
 
-        public static void error(Token token, string message)
+        public static void Error(Token token, string message)
         {
             if (token.type == Token.TokenType.EOF)
             {
-                report(token.line, " at end", message);
+                Report(token.line, " at end", message);
             }
             else
             {
-                report(token.line, " at '" + token.lexeme + "'", message);
+                Report(token.line, " at '" + token.lexeme + "'", message);
             }
         }
 
-        public static void runtimeError(RuntimeError error)
+        public static void RuntimeError(RuntimeError error)
         {
-            Console.WriteLine($"{error.Message} \n[line {error.token.line}]");
+            Console.WriteLine($"[line {error.token.line}] Runtime Error : {error.Message}");
             hadRuntimeError = true;
         }
 
-        private static void report(int line, string where, string message)
+        private static void Report(int line, string where, string message)
         {
             Console.WriteLine($"[line {line}] Error {where} : {message}");
             hadError = true;

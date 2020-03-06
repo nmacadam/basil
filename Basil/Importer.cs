@@ -27,33 +27,33 @@ namespace BasilLang
             this.source = source;
         }
 
-        public string import()
+        public string Process()
         {
-            while (!isAtEnd())
+            while (!IsAtEnd())
             {
                 start = current;
-                scanToken();
+                ScanToken();
             }
             return source;
         }
 
-        private void scanToken()
+        private void ScanToken()
         {
-            char c = advance();
-            if (isAlpha(c))
+            char c = Advance();
+            if (IsAlpha(c))
             {
-                identifier();
+                Identifier();
             }
         }
 
         // constructs a token for a keyword if valid
-        private void identifier()
+        private void Identifier()
         {
             int tokenStart = current - 1;
 
-            while (isAlphaNumeric(peek()))
+            while (IsAlphaNumeric(Peek()))
             {
-                advance();
+                Advance();
             }
 
             // See if the identifier is a reserved word.   
@@ -67,7 +67,7 @@ namespace BasilLang
                 switch (type)
                 {
                     case PreprocessingTokens.Import:
-                        importToken(tokenStart);
+                        ImportToken(tokenStart);
                         break;
                     default:
                         break;
@@ -75,25 +75,25 @@ namespace BasilLang
             }
         }
 
-        private void importToken(int tokenStart)
+        private void ImportToken(int tokenStart)
         {
             //var c = peek();
-            while (isWhiteSpace(peek()))
+            while (IsWhiteSpace(Peek()))
             {
                 //c = peek();
-                advance();
+                Advance();
             }
 
-            if (peek() != '"')
+            if (Peek() != '"')
             {
-                Basil.error(line, "Unexpected character.");
+                Basil.Error(line, "Unexpected character.");
                 return;
             }
             else
             {
-                advance();
+                Advance();
 
-                string path = makeString(current);
+                string path = MakeString(current);
 
                 // import
                 if (!imports.Contains(path))
@@ -109,7 +109,7 @@ namespace BasilLang
                     string newSource = System.IO.File.ReadAllText(path);
 
                     Importer importer = new Importer(newSource);
-                    string preprocessedNewSource = importer.import();
+                    string preprocessedNewSource = importer.Process();
 
                     source = source.Insert(current, preprocessedNewSource);
 
@@ -124,25 +124,25 @@ namespace BasilLang
         }
 
         // return the current character in the source without consuming it
-        private char peek()
+        private char Peek()
         {
-            if (isAtEnd()) return '\0';
+            if (IsAtEnd()) return '\0';
             return source[current];
         }
 
-        private char advance()
+        private char Advance()
         {
             current++;
             return source[current - 1];
         }
 
-        private bool isAtEnd()
+        private bool IsAtEnd()
         {
             return current >= source.Length;
         }
 
         // return if the character is a letter
-        private bool isAlpha(char c)
+        private bool IsAlpha(char c)
         {
             return (c >= 'a' && c <= 'z') ||
                    (c >= 'A' && c <= 'Z') ||
@@ -150,40 +150,40 @@ namespace BasilLang
         }
 
         // return if the character is alphanumeric
-        private bool isAlphaNumeric(char c)
+        private bool IsAlphaNumeric(char c)
         {
-            return isAlpha(c) || isDigit(c);
+            return IsAlpha(c) || IsDigit(c);
         }
 
         // return if the character is a digit
-        private bool isDigit(char c)
+        private bool IsDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
 
-        private bool isWhiteSpace(char c)
+        private bool IsWhiteSpace(char c)
         {
             return char.IsWhiteSpace(c);
         }
 
         // constructs a token with a string literal
-        private string makeString(int startIndex)
+        private string MakeString(int startIndex)
         {
-            while (peek() != '"' && !isAtEnd())
+            while (Peek() != '"' && !IsAtEnd())
             {
-                if (peek() == '\n') line++;
-                advance();
+                if (Peek() == '\n') line++;
+                Advance();
             }
 
             // Unterminated string.                                 
-            if (isAtEnd())
+            if (IsAtEnd())
             {
-                Basil.error(line, "Unterminated string.");
+                Basil.Error(line, "Unterminated string.");
                 return "";
             }
 
             // The closing ".                                       
-            advance();
+            Advance();
 
             // Trim the surrounding quotes.                         
             string value = source.Substring(startIndex, (current) - (startIndex + 1));

@@ -26,49 +26,49 @@ namespace BasilLang
             foreach (var item in nativeFunctions)
             {
                 var method = (NativeFunctions.NativeCallable)Activator.CreateInstance(item);
-                globals.define(method.MethodName, method);
+                globals.Define(method.MethodName, method);
             }
         }
 
-        public void interpret(List<Stmt> statements)
+        public void Interpret(List<Stmt> statements)
         {
             try
             {
                 // statements be empty?
                 foreach (Stmt statement in statements)
                 {
-                    execute(statement);
+                    Execute(statement);
                 }
             }
             catch (RuntimeError error)
             {
-                Basil.runtimeError(error);
+                Basil.RuntimeError(error);
             }
         }
 
         // evaluates a number of binary expressions
-        public object visitBinaryExpr(Expr.Binary expr)
+        public object VisitBinaryExpr(Expr.Binary expr)
         {
-            object left = evaluate(expr.left);
-            object right = evaluate(expr.right);
+            object left = Evaluate(expr.left);
+            object right = Evaluate(expr.right);
 
             switch (expr.op.type) {
                 case Token.TokenType.Greater:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left > (double)right;
                 case Token.TokenType.GreaterEqual:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left >= (double)right;
                 case Token.TokenType.Less:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left < (double)right;
                 case Token.TokenType.LessEqual:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left <= (double)right;
 
                 // arithmetic operators
                 case Token.TokenType.Minus:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left - (double)right;
                 case Token.TokenType.Plus:
                     if (left is double && right is double) {
@@ -105,30 +105,30 @@ namespace BasilLang
                         "Operands must be two numbers or two strings.");
 
                 case Token.TokenType.Slash:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left / (double)right;
                 case Token.TokenType.Star:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left * (double)right;
                 case Token.TokenType.Percent:
-                    checkNumberOperands(expr.op, left, right);
+                    CheckNumberOperands(expr.op, left, right);
                     return (double)left % (double)right;
-                case Token.TokenType.BangEqual: return !isEqual(left, right);
-                case Token.TokenType.EqualEqual: return isEqual(left, right);
+                case Token.TokenType.BangEqual: return !IsEqual(left, right);
+                case Token.TokenType.EqualEqual: return IsEqual(left, right);
             }
 
             // Unreachable.                                
             return null;
         }
 
-        public object visitCallExpr(Expr.Call expr)
+        public object VisitCallExpr(Expr.Call expr)
         {
-            object callee = evaluate(expr.callee);
+            object callee = Evaluate(expr.callee);
 
             List<object> arguments = new List<object>();
             foreach (Expr argument in expr.arguments)
             {
-                arguments.Add(evaluate(argument));
+                arguments.Add(Evaluate(argument));
             }
 
             if (!(callee is BasilCallable)) {
@@ -137,50 +137,50 @@ namespace BasilLang
             }
 
             BasilCallable function = (BasilCallable)callee;
-            if (arguments.Count != function.arity())
+            if (arguments.Count != function.Arity())
             {
                 throw new RuntimeError(expr.paren, "Expected " +
-                    function.arity() + " arguments but got " +
+                    function.Arity() + " arguments but got " +
                     arguments.Count + ".");
             }
 
-            return function.call(this, arguments);
+            return function.Call(this, arguments);
         }
 
         // evaluates grouped (parenthesis) expressions
-        public object visitGroupingExpr(Expr.Grouping expr)
+        public object VisitGroupingExpr(Expr.Grouping expr)
         {
-            return evaluate(expr.expression);
+            return Evaluate(expr.expression);
         }
 
         // Converts the literal tree node into a runtime value
-        public object visitLiteralExpr(Expr.Literal expr)
+        public object VisitLiteralExpr(Expr.Literal expr)
         {
             return expr.value;
         }
 
         // allows short circuiting the check, unlike binary expr
-        public object visitLogicalExpr(Expr.Logical expr)
+        public object VisitLogicalExpr(Expr.Logical expr)
         {
-            object left = evaluate(expr.left);
+            object left = Evaluate(expr.left);
 
             if (expr.op.type == Token.TokenType.Or) {
-                if (isTruthy(left)) return left;
+                if (IsTruthy(left)) return left;
             } else {
-                if (!isTruthy(left)) return left;
+                if (!IsTruthy(left)) return left;
             }
 
-            return evaluate(expr.right);
+            return Evaluate(expr.right);
         }
 
         // evaluates sub-expression and applies unary operator
-        public object visitUnaryExpr(Expr.Unary expr)
+        public object VisitUnaryExpr(Expr.Unary expr)
         {
-            object right = evaluate(expr.right);
+            object right = Evaluate(expr.right);
 
             switch (expr.op.type) {
                 case Token.TokenType.Bang:
-                    return !isTruthy(right);
+                    return !IsTruthy(right);
                 case Token.TokenType.Minus:
                     return -(double)right;
             }
@@ -189,12 +189,12 @@ namespace BasilLang
             return null;
         }
 
-        public object visitVariableExpr(Expr.Variable expr)
+        public object VisitVariableExpr(Expr.Variable expr)
         {
-            return environment.get(expr.name);
+            return environment.Get(expr.name);
         }
 
-        private void checkNumberOperand(Token op, object operand)
+        private void CheckNumberOperand(Token op, object operand)
         {
             if (operand is double) return;
             Console.WriteLine("TEMP_ERROR::OPERAND MUST BE A NUMBER.");
@@ -202,7 +202,7 @@ namespace BasilLang
             throw new RuntimeError(op, "Operand must be a number.");
         }
 
-        private void checkNumberOperands(Token op,
+        private void CheckNumberOperands(Token op,
                                    Object left, Object right)
         {
             if (left is double && right is double) return;
@@ -212,14 +212,14 @@ namespace BasilLang
 
         // handle logic for dynamic typing
         // follows rule : false/nil false, all others true
-        private bool isTruthy(object obj)
+        private bool IsTruthy(object obj)
         {
             if (obj == null) return false;
             if (obj is bool) return (bool)obj;
             return true;
         }
 
-        private bool isEqual(object a, object b)
+        private bool IsEqual(object a, object b)
         {
             // nil is only equal to nil.               
             if (a == null && b == null) return true;
@@ -228,7 +228,7 @@ namespace BasilLang
             return a.Equals(b);
         }
 
-        private string stringify(object obj)
+        private string Stringify(object obj)
         {
             if (obj == null) return "nil";
 
@@ -246,17 +246,17 @@ namespace BasilLang
         }
 
         // send the expression back through the interpreter's visitor implementation
-        private object evaluate(Expr expr)
+        private object Evaluate(Expr expr)
         {
-            return expr.accept(this);
+            return expr.Accept(this);
         }
 
-        private void execute(Stmt stmt)
+        private void Execute(Stmt stmt)
         {
-            stmt.accept(this);
+            stmt.Accept(this);
         }
 
-        public void executeBlock(List<Stmt> statements, Environment environment)
+        public void ExecuteBlock(List<Stmt> statements, Environment environment)
         {
             Environment previous = this.environment;
             try
@@ -264,7 +264,7 @@ namespace BasilLang
                 this.environment = environment;
                 foreach (Stmt statement in statements)
                 {
-                    execute(statement);
+                    Execute(statement);
                 }
             }
             finally
@@ -273,91 +273,91 @@ namespace BasilLang
             }
         }
 
-        public object visitExpressionStmt(Stmt.Expression stmt)
+        public object VisitExpressionStmt(Stmt.Expression stmt)
         {
-            evaluate(stmt.expression);
+            Evaluate(stmt.expression);
             return null;
         }
 
-        public object visitIfStatement(Stmt.If stmt)
+        //public object VisitIfStatement(Stmt.If stmt)
+        //{
+        //    if (IsTruthy(Evaluate(stmt.condition)))
+        //    {
+        //        Execute(stmt.thenBranch);
+        //    }
+        //    else if (stmt.elseBranch != null)
+        //    {
+        //        Execute(stmt.elseBranch);
+        //    }
+        //    return null;
+        //}
+
+        public object VisitPrintStmt(Stmt.Print stmt)
         {
-            if (isTruthy(evaluate(stmt.condition)))
-            {
-                execute(stmt.thenBranch);
-            }
-            else if (stmt.elseBranch != null)
-            {
-                execute(stmt.elseBranch);
-            }
+            object value = Evaluate(stmt.expression);
+            Console.WriteLine(Stringify(value));
             return null;
         }
 
-        public object visitPrintStmt(Stmt.Print stmt)
-        {
-            object value = evaluate(stmt.expression);
-            Console.WriteLine(stringify(value));
-            return null;
-        }
-
-        public object visitVarStmt(Stmt.Var stmt)
+        public object VisitVarStmt(Stmt.Var stmt)
         {
             object value = null;
             if (stmt.initializer != null)
             {
-                value = evaluate(stmt.initializer);
+                value = Evaluate(stmt.initializer);
             }
 
-            environment.define(stmt.name.lexeme, value);
+            environment.Define(stmt.name.lexeme, value);
             return null;
         }
 
-        public object visitWhileStmt(Stmt.While stmt)
+        public object VisitWhileStmt(Stmt.While stmt)
         {
-            while (isTruthy(evaluate(stmt.condition)))
+            while (IsTruthy(Evaluate(stmt.condition)))
             {
-                execute(stmt.body);
+                Execute(stmt.body);
             }
             return null;
         }
 
-        public object visitAssignExpr(Expr.Assign expr)
+        public object VisitAssignExpr(Expr.Assign expr)
         {
-            object value = evaluate(expr.value);
+            object value = Evaluate(expr.value);
 
-            environment.assign(expr.name, value);
+            environment.Assign(expr.name, value);
             return value;
         }
 
-        public object visitBlockStmt(Stmt.Block stmt)
+        public object VisitBlockStmt(Stmt.Block stmt)
         {
-            executeBlock(stmt.statements, new Environment(environment));
+            ExecuteBlock(stmt.statements, new Environment(environment));
             return null;
         }
 
-        public object visitIfStmt(Stmt.If stmt)
+        public object VisitIfStmt(Stmt.If stmt)
         {
-            if (isTruthy(evaluate(stmt.condition)))
+            if (IsTruthy(Evaluate(stmt.condition)))
             {
-                execute(stmt.thenBranch);
+                Execute(stmt.thenBranch);
             }
             else if (stmt.elseBranch != null)
             {
-                execute(stmt.elseBranch);
+                Execute(stmt.elseBranch);
             }
             return null;
         }
 
-        public object visitFunctionStmt(Stmt.Function stmt)
+        public object VisitFunctionStmt(Stmt.Function stmt)
         {
             BasilFunction function = new BasilFunction(stmt, environment);
-            environment.define(stmt.name.lexeme, function);
+            environment.Define(stmt.name.lexeme, function);
             return null;
         }
 
-        public object visitReturnStmt(Stmt.Return stmt)
+        public object VisitReturnStmt(Stmt.Return stmt)
         {
             object value = null;
-            if (stmt.value != null) value = evaluate(stmt.value);
+            if (stmt.value != null) value = Evaluate(stmt.value);
 
             throw new Return(value);
         }

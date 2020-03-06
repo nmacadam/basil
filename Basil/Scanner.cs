@@ -18,12 +18,12 @@ namespace BasilLang
         }
 
         // scan all tokens from source string
-        public List<Token> scanTokens()
+        public List<Token> ScanTokens()
         {
-            while(!isAtEnd())
+            while(!IsAtEnd())
             {
                 start = current;
-                scanToken();
+                ScanToken();
             }
 
             tokens.Add(new Token(Token.TokenType.EOF, "", null, line));
@@ -31,48 +31,48 @@ namespace BasilLang
         }
 
         // scan an individual token
-        private void scanToken()
+        private void ScanToken()
         {
-            char c = advance();
+            char c = Advance();
             switch (c)
             {
                 // Single-character
-                case '(': addToken(Token.TokenType.LeftParenthesis); break;
-                case ')': addToken(Token.TokenType.RightParenthesis); break;
-                case '{': addToken(Token.TokenType.LeftBrace); break;
-                case '}': addToken(Token.TokenType.RightBrace); break;
+                case '(': AddToken(Token.TokenType.LeftParenthesis); break;
+                case ')': AddToken(Token.TokenType.RightParenthesis); break;
+                case '{': AddToken(Token.TokenType.LeftBrace); break;
+                case '}': AddToken(Token.TokenType.RightBrace); break;
                 //case '[': addToken(Token.TokenType.LeftBracket); break;
                 //case ']': addToken(Token.TokenType.RightBracket); break;
-                case ',': addToken(Token.TokenType.Comma); break;
-                case '.': addToken(Token.TokenType.Dot); break;
-                case '-': addToken(Token.TokenType.Minus); break;
-                case '+': addToken(Token.TokenType.Plus); break;
-                case ';': addToken(Token.TokenType.Semicolon); break;
-                case '*': addToken(Token.TokenType.Star); break;
-                case '%': addToken(Token.TokenType.Percent); break;
+                case ',': AddToken(Token.TokenType.Comma); break;
+                case '.': AddToken(Token.TokenType.Dot); break;
+                case '-': AddToken(Token.TokenType.Minus); break;
+                case '+': AddToken(Token.TokenType.Plus); break;
+                case ';': AddToken(Token.TokenType.Semicolon); break;
+                case '*': AddToken(Token.TokenType.Star); break;
+                case '%': AddToken(Token.TokenType.Percent); break;
 
                 //case '?': addToken(Token.TokenType.If); break;
                 //case '|': addToken(Token.TokenType.Else); break;
 
                 // Single or double characters
-                case '!': addToken(match('=') ? Token.TokenType.BangEqual : Token.TokenType.Bang); break;
-                case '=': addToken(match('=') ? Token.TokenType.EqualEqual : Token.TokenType.Equal); break;
-                case '<': addToken(match('=') ? Token.TokenType.LessEqual : Token.TokenType.Less); break;
-                case '>': addToken(match('=') ? Token.TokenType.GreaterEqual : Token.TokenType.Greater); break;
+                case '!': AddToken(Match('=') ? Token.TokenType.BangEqual : Token.TokenType.Bang); break;
+                case '=': AddToken(Match('=') ? Token.TokenType.EqualEqual : Token.TokenType.Equal); break;
+                case '<': AddToken(Match('=') ? Token.TokenType.LessEqual : Token.TokenType.Less); break;
+                case '>': AddToken(Match('=') ? Token.TokenType.GreaterEqual : Token.TokenType.Greater); break;
                 case '/':
-                    if (match('/'))
+                    if (Match('/'))
                     {
                         // A comment goes until the end of the line.                
-                        while (peek() != '\n' && !isAtEnd()) advance();
+                        while (Peek() != '\n' && !IsAtEnd()) Advance();
                     }
                     else
                     {
-                        addToken(Token.TokenType.Slash);
+                        AddToken(Token.TokenType.Slash);
                     }
                     break;
 
                 // Literals
-                case '"': makeString(); break;
+                case '"': MakeString(); break;
 
                 // White-space
                 case ' ':
@@ -86,65 +86,65 @@ namespace BasilLang
 
                 // if not a language token, determine what the user has entered and if it is valid
                 default:
-                    if (isDigit(c))
+                    if (IsDigit(c))
                     {
-                        makeNumber();
+                        MakeNumber();
                     }
-                    else if (isAlpha(c))
+                    else if (IsAlpha(c))
                     {
-                        identifier();
+                        Identifier();
                     }
                     else
                     {
-                        Basil.error(line, "Unexpected character.");
+                        Basil.Error(line, "Unexpected character.");
                     }
                     break;
             }
         }
 
         // constructs a token with a string literal
-        private void makeString () {                                   
-            while (peek() != '"' && !isAtEnd()) {                   
-              if (peek() == '\n') line++;                           
-              advance();
+        private void MakeString () {                                   
+            while (Peek() != '"' && !IsAtEnd()) {                   
+              if (Peek() == '\n') line++;                           
+              Advance();
             }
 
             // Unterminated string.                                 
-            if (isAtEnd()) {
-                Basil.error(line, "Unterminated string.");              
+            if (IsAtEnd()) {
+                Basil.Error(line, "Unterminated string.");              
                 return;                                               
             }
 
             // The closing ".                                       
-            advance();
+            Advance();
 
             // Trim the surrounding quotes.                         
             string value = source.Substring(start + 1, (current - 1) - (start + 1));
-            addToken(Token.TokenType.String, value);                                
+            AddToken(Token.TokenType.String, value);                                
         }
 
         // constructs a token with a numeric literal
-        private void makeNumber()
+        private void MakeNumber()
         {
-            while (isDigit(peek())) advance();
+            while (IsDigit(Peek())) Advance();
 
             // Look for a fractional part.                            
-            if (peek() == '.' && isDigit(peekNext()))
+            if (Peek() == '.' && IsDigit(PeekNext()))
             {
                 // Consume the "."                                      
-                advance();
+                Advance();
 
-                while (isDigit(peek())) advance();
+                while (IsDigit(Peek())) Advance();
             }
 
-            addToken(Token.TokenType.Number,
+            AddToken(Token.TokenType.Number,
                 double.Parse(source.Substring(start, current - start)));
         }
 
         // constructs a token for a keyword if valid
-        private void identifier()
+        private void Identifier()
         {
-            while (isAlphaNumeric(peek())) advance();
+            while (IsAlphaNumeric(Peek())) Advance();
 
             // See if the identifier is a reserved word.   
             string text = source.Substring(start, current - start);
@@ -155,11 +155,11 @@ namespace BasilLang
                 type = keywords[text];
             }
             else type = Token.TokenType.Identifier;
-            addToken(type);
+            AddToken(type);
         }
 
         // return if the character is a letter
-        private bool isAlpha(char c)
+        private bool IsAlpha(char c)
         {
             return (c >= 'a' && c <= 'z') ||
                    (c >= 'A' && c <= 'Z') ||
@@ -167,22 +167,22 @@ namespace BasilLang
         }
 
         // return if the character is alphanumeric
-        private bool isAlphaNumeric(char c)
+        private bool IsAlphaNumeric(char c)
         {
-            return isAlpha(c) || isDigit(c);
+            return IsAlpha(c) || IsDigit(c);
         }
 
         // return if the character is a digit
-        private bool isDigit(char c)
+        private bool IsDigit(char c)
         {
             return c >= '0' && c <= '9';
         }
 
 
         // conditionally advance if the expected character is the current character 
-        private bool match(char expected)
+        private bool Match(char expected)
         {
-            if (isAtEnd()) return false;
+            if (IsAtEnd()) return false;
             if (source[current] != expected) return false;
 
             current++;
@@ -190,41 +190,41 @@ namespace BasilLang
         }
 
         // return the current character in the source without consuming it
-        private char peek()
+        private char Peek()
         {
-            if (isAtEnd()) return '\0';
+            if (IsAtEnd()) return '\0';
             return source[current];
         }
 
         // return the next character in the source without consuming it or the previous character
-        private char peekNext()
+        private char PeekNext()
         {
             if (current + 1 >= source.Length) return '\0';
             return source[current + 1];
         }
 
         // consumes the next character in the source and returns it
-        private char advance()
+        private char Advance()
         {
             current++;
             return source[current - 1];
         }
 
         // creates a token for the current lexeme
-        private void addToken(Token.TokenType type)
+        private void AddToken(Token.TokenType type)
         {
-            addToken(type, null);
+            AddToken(type, null);
         }
 
         // creates a token for the current lexeme, including a literal value
-        private void addToken(Token.TokenType type, object literal)
+        private void AddToken(Token.TokenType type, object literal)
         {
             string text = source.Substring(start, current - start);
             tokens.Add(new Token(type, text, literal, line));
         }
 
         // determine if the iterator has reached the end of the source string
-        private bool isAtEnd()
+        private bool IsAtEnd()
         {
             return current >= source.Length;
         }

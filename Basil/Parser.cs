@@ -23,110 +23,110 @@ namespace BasilLang
             this.tokens = tokens;
         }
 
-        public List<Stmt> parse()
+        public List<Stmt> Parse()
         {
             List<Stmt> statements = new List<Stmt>();
-            while (!isAtEnd())
+            while (!IsAtEnd())
             {
-                statements.Add(declaration());
+                statements.Add(Declaration());
                 //statements.Add(statement());
             }
 
             return statements;
         }
 
-        private Stmt declaration()
+        private Stmt Declaration()
         {
             try
             {
-                if (match(Token.TokenType.Fun)) return function("function");
-                if (match(Token.TokenType.Var)) return varDeclaration();
+                if (Match(Token.TokenType.Fun)) return Function("function");
+                if (Match(Token.TokenType.Var)) return VarDeclaration();
 
-                return statement();
+                return Statement();
             }
             catch (ParseError error)
             {
-                synchronize();
+                Synchronize();
                 return null;
             }
         }
 
-        private Stmt varDeclaration()
+        private Stmt VarDeclaration()
         {
-            Token name = consume(Token.TokenType.Identifier, "Expect variable name.");
+            Token name = Consume(Token.TokenType.Identifier, "Expect variable name.");
 
             Expr initializer = null;
-            if (match(Token.TokenType.Equal))
+            if (Match(Token.TokenType.Equal))
             {
-                initializer = expression();
+                initializer = Expression();
             }
 
-            consume(Token.TokenType.Semicolon, "Expect ';' after variable declaration.");
+            Consume(Token.TokenType.Semicolon, "Expect ';' after variable declaration.");
             return new Stmt.Var(name, initializer);
         }
 
-        private Stmt whileStatement()
+        private Stmt WhileStatement()
         {
-            consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'while'.");
-            Expr condition = expression();
-            consume(Token.TokenType.RightParenthesis, "Expect ')' after condition.");
-            Stmt body = statement();
+            Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'while'.");
+            Expr condition = Expression();
+            Consume(Token.TokenType.RightParenthesis, "Expect ')' after condition.");
+            Stmt body = Statement();
 
             return new Stmt.While(condition, body);
         }
 
-        private Expr expression()
+        private Expr Expression()
         {
-            return assignment();
+            return Assignment();
         }
 
         // parse individual statements
-        private Stmt statement()
+        private Stmt Statement()
         {
-            if (match(Token.TokenType.For)) return forStatement();
-            if (match(Token.TokenType.If)) return ifStatement();
-            if (match(Token.TokenType.Print)) return printStatement();
-            if (match(Token.TokenType.Return)) return returnStatement();
-            if (match(Token.TokenType.While)) return whileStatement();
-            if (match(Token.TokenType.LeftBrace)) return new Stmt.Block(block());
+            if (Match(Token.TokenType.For)) return ForStatement();
+            if (Match(Token.TokenType.If)) return IfStatement();
+            if (Match(Token.TokenType.Print)) return PrintStatement();
+            if (Match(Token.TokenType.Return)) return ReturnStatement();
+            if (Match(Token.TokenType.While)) return WhileStatement();
+            if (Match(Token.TokenType.LeftBrace)) return new Stmt.Block(Block());
 
-            return expressionStatement();
+            return ExpressionStatement();
         }
 
         // our first desugaring
-        private Stmt forStatement()
+        private Stmt ForStatement()
         {
-            consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'for'.");
+            Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'for'.");
 
             Stmt initializer;
-            if (match(Token.TokenType.Semicolon))
+            if (Match(Token.TokenType.Semicolon))
             {
                 initializer = null;
             }
-            else if (match(Token.TokenType.Var))
+            else if (Match(Token.TokenType.Var))
             {
-                initializer = varDeclaration();
+                initializer = VarDeclaration();
             }
             else
             {
-                initializer = expressionStatement();
+                initializer = ExpressionStatement();
             }
 
             Expr condition = null;
-            if (!check(Token.TokenType.Semicolon))
+            if (!Check(Token.TokenType.Semicolon))
             {
-                condition = expression();
+                condition = Expression();
             }
-            consume(Token.TokenType.Semicolon, "Expect ';' after loop condition.");
+            Consume(Token.TokenType.Semicolon, "Expect ';' after loop condition.");
 
             Expr increment = null;
-            if (!check(Token.TokenType.RightParenthesis))
+            if (!Check(Token.TokenType.RightParenthesis))
             {
-                increment = expression();
+                increment = Expression();
             }
-            consume(Token.TokenType.RightParenthesis, "Expect ')' after for clauses.");
+            Consume(Token.TokenType.RightParenthesis, "Expect ')' after for clauses.");
 
-            Stmt body = statement();
+            Stmt body = Statement();
 
             if (increment != null)
             {
@@ -156,129 +156,129 @@ namespace BasilLang
             return body;
         }
 
-        private Stmt ifStatement()
+        private Stmt IfStatement()
         {
-            consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'if'.");
-            Expr condition = expression();
-            consume(Token.TokenType.RightParenthesis, "Expect ')' after if condition.");
+            Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'if'.");
+            Expr condition = Expression();
+            Consume(Token.TokenType.RightParenthesis, "Expect ')' after if condition.");
 
-            Stmt thenBranch = statement();
+            Stmt thenBranch = Statement();
             Stmt elseBranch = null;
-            if (match(Token.TokenType.Else))
+            if (Match(Token.TokenType.Else))
             {
-                elseBranch = statement();
+                elseBranch = Statement();
             }
 
             return new Stmt.If(condition, thenBranch, elseBranch);
         }
 
-        private Stmt printStatement()
+        private Stmt PrintStatement()
         {
-            Expr value = expression();
-            consume(Token.TokenType.Semicolon, "Expect ';' after value.");
+            Expr value = Expression();
+            Consume(Token.TokenType.Semicolon, "Expect ';' after value.");
             //Console.WriteLine(Basil.printer.print(value));
             return new Stmt.Print(value);
         }
 
-        private Stmt returnStatement()
+        private Stmt ReturnStatement()
         {
-            Token keyword = previous();
+            Token keyword = Previous();
             Expr value = null;
-            if (!check(Token.TokenType.Semicolon))
+            if (!Check(Token.TokenType.Semicolon))
             {
-                value = expression();
+                value = Expression();
             }
 
-            consume(Token.TokenType.Semicolon, "Expect ';' after return value.");
+            Consume(Token.TokenType.Semicolon, "Expect ';' after return value.");
             return new Stmt.Return(keyword, value);
         }
 
-        private Stmt expressionStatement()
+        private Stmt ExpressionStatement()
         {
-            Expr expr = expression();
-            consume(Token.TokenType.Semicolon, "Expect ';' after expression.");
+            Expr expr = Expression();
+            Consume(Token.TokenType.Semicolon, "Expect ';' after expression.");
             return new Stmt.Expression(expr);
         }
 
-        private Stmt.Function function(String kind)
+        private Stmt.Function Function(String kind)
         {
-            Token name = consume(Token.TokenType.Identifier, "Expect " + kind + " name.");
-            consume(Token.TokenType.LeftParenthesis, "Expect '(' after " + kind + " name.");
+            Token name = Consume(Token.TokenType.Identifier, "Expect " + kind + " name.");
+            Consume(Token.TokenType.LeftParenthesis, "Expect '(' after " + kind + " name.");
             List<Token> parameters = new List<Token>();
-            if (!check(Token.TokenType.RightParenthesis))
+            if (!Check(Token.TokenType.RightParenthesis))
             {
                 do
                 {
                     if (parameters.Count >= 255)
                     {
-                        error(peek(), "Cannot have more than 255 parameters.");
+                        Error(Peek(), "Cannot have more than 255 parameters.");
                     }
 
-                    parameters.Add(consume(Token.TokenType.Identifier, "Expect parameter name."));
-                } while (match(Token.TokenType.Comma));
+                    parameters.Add(Consume(Token.TokenType.Identifier, "Expect parameter name."));
+                } while (Match(Token.TokenType.Comma));
             }
-            consume(Token.TokenType.RightParenthesis, "Expect ')' after parameters.");
+            Consume(Token.TokenType.RightParenthesis, "Expect ')' after parameters.");
 
-            consume(Token.TokenType.LeftBrace, "Expect '{' before " + kind + " body.");
-            List<Stmt> body = block();
+            Consume(Token.TokenType.LeftBrace, "Expect '{' before " + kind + " body.");
+            List<Stmt> body = Block();
             return new Stmt.Function(name, parameters, body);
         }
 
-        private List<Stmt> block()
+        private List<Stmt> Block()
         {
             List<Stmt> statements = new List<Stmt>();
 
-            while (!check(Token.TokenType.RightBrace) && !isAtEnd())
+            while (!Check(Token.TokenType.RightBrace) && !IsAtEnd())
             {
-                statements.Add(declaration());
+                statements.Add(Declaration());
             }
 
-            consume(Token.TokenType.RightBrace, "Expect '}' after block.");
+            Consume(Token.TokenType.RightBrace, "Expect '}' after block.");
             return statements;
         }
 
-        private Expr assignment()
+        private Expr Assignment()
         {
-            Expr expr = or();
+            Expr expr = Or();
 
-            if (match(Token.TokenType.Equal))
+            if (Match(Token.TokenType.Equal))
             {
-                Token equals = previous();
-                Expr value = assignment();
+                Token equals = Previous();
+                Expr value = Assignment();
 
                 if (expr is Expr.Variable) {
                     Token name = ((Expr.Variable)expr).name;
                     return new Expr.Assign(name, value);
                 }
 
-                error(equals, "Invalid assignment target.");
+                Error(equals, "Invalid assignment target.");
             }
 
             return expr;
         }
 
-        private Expr or()
+        private Expr Or()
         {
-            Expr expr = and();
+            Expr expr = And();
 
-            while (match(Token.TokenType.Or))
+            while (Match(Token.TokenType.Or))
             {
-                Token op = previous();
-                Expr right = and();
+                Token op = Previous();
+                Expr right = And();
                 expr = new Expr.Logical(expr, op, right);
             }
 
             return expr;
         }
 
-        private Expr and()
+        private Expr And()
         {
-            Expr expr = equality();
+            Expr expr = Equality();
 
-            while (match(Token.TokenType.And))
+            while (Match(Token.TokenType.And))
             {
-                Token op = previous();
-                Expr right = equality();
+                Token op = Previous();
+                Expr right = Equality();
                 expr = new Expr.Logical(expr, op, right);
             }
 
@@ -286,15 +286,15 @@ namespace BasilLang
         }
 
         // generates an expr for equality check
-        private Expr equality()
+        private Expr Equality()
         {
-            Expr expr = comparison();
+            Expr expr = Comparison();
 
             // exit when we find an equality operator
-            while (match(Token.TokenType.BangEqual, Token.TokenType.EqualEqual))
+            while (Match(Token.TokenType.BangEqual, Token.TokenType.EqualEqual))
             {
-                Token op = previous();
-                Expr right = comparison();
+                Token op = Previous();
+                Expr right = Comparison();
                 expr = new Expr.Binary(expr, op, right);
             }
 
@@ -302,14 +302,14 @@ namespace BasilLang
         }
 
         // generates an expr for comparison
-        private Expr comparison()
+        private Expr Comparison()
         {
-            Expr expr = addition();
+            Expr expr = Addition();
 
-            while (match(Token.TokenType.Greater, Token.TokenType.GreaterEqual, Token.TokenType.Less, Token.TokenType.LessEqual))
+            while (Match(Token.TokenType.Greater, Token.TokenType.GreaterEqual, Token.TokenType.Less, Token.TokenType.LessEqual))
             {
-                Token op = previous();
-                Expr right = addition();
+                Token op = Previous();
+                Expr right = Addition();
                 expr = new Expr.Binary(expr, op, right);
             }
 
@@ -317,14 +317,14 @@ namespace BasilLang
         }
 
         // generates an expr for addition
-        private Expr addition()
+        private Expr Addition()
         {
-            Expr expr = multiplication();
+            Expr expr = Multiplication();
 
-            while (match(Token.TokenType.Minus, Token.TokenType.Plus))
+            while (Match(Token.TokenType.Minus, Token.TokenType.Plus))
             {
-                Token op = previous();
-                Expr right = multiplication();
+                Token op = Previous();
+                Expr right = Multiplication();
                 expr = new Expr.Binary(expr, op, right);
             }
 
@@ -332,14 +332,14 @@ namespace BasilLang
         }
 
         // generates an expr for multiplication
-        private Expr multiplication()
+        private Expr Multiplication()
         {
-            Expr expr = unary();
+            Expr expr = Unary();
 
-            while (match(Token.TokenType.Slash, Token.TokenType.Star, Token.TokenType.Percent))
+            while (Match(Token.TokenType.Slash, Token.TokenType.Star, Token.TokenType.Percent))
             {
-                Token op = previous();
-                Expr right = unary();
+                Token op = Previous();
+                Expr right = Unary();
                 expr = new Expr.Binary(expr, op, right);
             }
 
@@ -347,47 +347,47 @@ namespace BasilLang
         }
 
         // generates an expr for unary operators (e.g. ! and -)
-        private Expr unary()
+        private Expr Unary()
         {
-            if (match(Token.TokenType.Bang, Token.TokenType.Minus))
+            if (Match(Token.TokenType.Bang, Token.TokenType.Minus))
             {
-                Token op = previous();
-                Expr right = unary();
+                Token op = Previous();
+                Expr right = Unary();
                 return new Expr.Unary(op, right);
             }
 
-            return call();
+            return Call();
         }
 
-        private Expr finishCall(Expr callee)
+        private Expr FinishCall(Expr callee)
         {
             List<Expr> arguments = new List<Expr>();
-            if (!check(Token.TokenType.RightParenthesis))
+            if (!Check(Token.TokenType.RightParenthesis))
             {
                 do
                 {
                     if (arguments.Count >= 255)
                     {
-                        error(peek(), "Cannot have more than 255 arguments.");
+                        Error(Peek(), "Cannot have more than 255 arguments.");
                     }
-                    arguments.Add(expression());
-                } while (match(Token.TokenType.Comma));
+                    arguments.Add(Expression());
+                } while (Match(Token.TokenType.Comma));
             }
 
-            Token paren = consume(Token.TokenType.RightParenthesis, "Expect ')' after arguments.");
+            Token paren = Consume(Token.TokenType.RightParenthesis, "Expect ')' after arguments.");
 
             return new Expr.Call(callee, paren, arguments);
         }
 
-        private Expr call()
+        private Expr Call()
         {
-            Expr expr = primary();
+            Expr expr = Primary();
 
             while (true)
             {
-                if (match(Token.TokenType.LeftParenthesis))
+                if (Match(Token.TokenType.LeftParenthesis))
                 {
-                    expr = finishCall(expr);
+                    expr = FinishCall(expr);
                 }
                 else
                 {
@@ -400,57 +400,59 @@ namespace BasilLang
 
         // generates an expr for primary expressions (e.g. Number, String, true/false)
         // this is the highest level of precedence
-        private Expr primary()
+        private Expr Primary()
         {
-            if (match(Token.TokenType.False)) return new Expr.Literal(false);
-            if (match(Token.TokenType.True)) return new Expr.Literal(true);
-            if (match(Token.TokenType.Nil)) return new Expr.Literal(null);
+            if (Match(Token.TokenType.False)) return new Expr.Literal(false);
+            if (Match(Token.TokenType.True)) return new Expr.Literal(true);
+            if (Match(Token.TokenType.Nil)) return new Expr.Literal(null);
 
-            if (match(Token.TokenType.Number, Token.TokenType.String))
+            if (Match(Token.TokenType.Number, Token.TokenType.String))
             {
-                return new Expr.Literal(previous().literal);
+                return new Expr.Literal(Previous().literal);
             }
 
-            if (match(Token.TokenType.Identifier))
+            if (Match(Token.TokenType.Identifier))
             {
-                return new Expr.Variable(previous());
+                return new Expr.Variable(Previous());
             }
 
-            if (match(Token.TokenType.LeftParenthesis))
+            if (Match(Token.TokenType.LeftParenthesis))
             {
-                Expr expr = expression();
-                consume(Token.TokenType.RightParenthesis, "Expect ')' after expression.");
+                Expr expr = Expression();
+                Consume(Token.TokenType.RightParenthesis, "Expect ')' after expression.");
                 return new Expr.Grouping(expr);
             }
 
-            throw error(peek(), "Expect expression.");
+            throw Error(Peek(), "Expect expression.");
         }
 
-        // checks if the next token is of the expected type, and advances
-        private Token consume(Token.TokenType type, string message)
-        {
-            if (check(type)) return advance();
+        // Helpers
 
-            throw error(peek(), message);
+        // checks if the next token is of the expected type, and advances
+        private Token Consume(Token.TokenType type, string message)
+        {
+            if (Check(type)) return Advance();
+
+            throw Error(Peek(), message);
         }
 
         // reports an error about a token
-        private ParseError error(Token token, string message)
+        private ParseError Error(Token token, string message)
         {
-            Basil.error(token, message);
+            Basil.Error(token, message);
             return new ParseError();
         }
 
         // discard tokens until the beginning of the next statement in the case that a statement fails
-        private void synchronize()
+        private void Synchronize()
         {
-            advance();
+            Advance();
 
-            while (!isAtEnd())
+            while (!IsAtEnd())
             {
-                if (previous().type == Token.TokenType.Semicolon) return;
+                if (Previous().type == Token.TokenType.Semicolon) return;
 
-                switch (peek().type)
+                switch (Peek().type)
                 {
                     case Token.TokenType.Class:
                     case Token.TokenType.Fun:
@@ -463,18 +465,18 @@ namespace BasilLang
                         return;
                 }
 
-                advance();
+                Advance();
             }
         }
 
         // checks if the current token is a given type, and consumes it if true
-        private bool match(params Token.TokenType[] types)
+        private bool Match(params Token.TokenType[] types)
         {
             foreach (var type in types)
             {
-                if (check(type))
+                if (Check(type))
                 {
-                    advance();
+                    Advance();
                     return true;
                 }
             }
@@ -483,33 +485,33 @@ namespace BasilLang
         }
 
         // returns true if the current token is of the given type
-        private bool check(Token.TokenType type)
+        private bool Check(Token.TokenType type)
         {
-            if (isAtEnd()) return false;
-            return peek().type == type;
+            if (IsAtEnd()) return false;
+            return Peek().type == type;
         }
 
         // consumes the current token and returns it
-        private Token advance()
+        private Token Advance()
         {
-            if (!isAtEnd()) current++;
-            return previous();
+            if (!IsAtEnd()) current++;
+            return Previous();
         }
 
         // returns if the current token is the end-of-file
-        private bool isAtEnd()
+        private bool IsAtEnd()
         {
-            return peek().type == Token.TokenType.EOF;
+            return Peek().type == Token.TokenType.EOF;
         }
 
         // returns the current token
-        private Token peek()
+        private Token Peek()
         {
             return tokens[current];
         }
 
         // returns the previous token
-        private Token previous()
+        private Token Previous()
         {
             return tokens[current - 1];
         }

@@ -5,8 +5,8 @@ namespace BasilLang
 {
     public interface BasilCallable
     {
-        int arity();
-        object call(Interpreter interpreter, List<object> arguments);
+        int Arity();
+        object Call(Interpreter interpreter, List<object> arguments);
     }
 
     class BasilFunction : BasilCallable
@@ -20,22 +20,22 @@ namespace BasilLang
             this.declaration = declaration;
         }
 
-        public int arity()
+        public int Arity()
         {
             return declaration.parameters.Count;
         }
 
-        public object call(Interpreter interpreter, List<object> arguments)
+        public object Call(Interpreter interpreter, List<object> arguments)
         {
             Environment environment = new Environment(closure);
             for (int i = 0; i < declaration.parameters.Count; i++) {
-                environment.define(declaration.parameters[i].lexeme,
+                environment.Define(declaration.parameters[i].lexeme,
                     arguments[i]);
             }
 
             try
             {
-                interpreter.executeBlock(declaration.body, environment);
+                interpreter.ExecuteBlock(declaration.body, environment);
             }
             catch (Return returnValue)
             {

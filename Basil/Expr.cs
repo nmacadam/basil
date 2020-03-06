@@ -7,21 +7,21 @@ namespace BasilLang
         // allows defining methods for handling different expressions without modifying their code
         public interface Visitor<R>
         {
-            R visitAssignExpr(Assign expr);
-            R visitBinaryExpr(Binary expr);
-            R visitCallExpr(Call expr);
+            R VisitAssignExpr(Assign expr);
+            R VisitBinaryExpr(Binary expr);
+            R VisitCallExpr(Call expr);
             //R visitGetExpr(Get expr);
-            R visitGroupingExpr(Grouping expr);
-            R visitLiteralExpr(Literal expr);
-            R visitLogicalExpr(Logical expr);
+            R VisitGroupingExpr(Grouping expr);
+            R VisitLiteralExpr(Literal expr);
+            R VisitLogicalExpr(Logical expr);
             //R visitSetExpr(Set expr);
             //R visitSuperExpr(Super expr);
             //R visitThisExpr(This expr);
-            R visitUnaryExpr(Unary expr);
-            R visitVariableExpr(Variable expr);
+            R VisitUnaryExpr(Unary expr);
+            R VisitVariableExpr(Variable expr);
         }
 
-        public abstract R accept<R>(Visitor<R> visitor);
+        public abstract R Accept<R>(Visitor<R> visitor);
 
         
         public class Assign : Expr
@@ -32,9 +32,9 @@ namespace BasilLang
                 this.value = value;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitAssignExpr(this);
+                return visitor.VisitAssignExpr(this);
             }
 
             public readonly Token name;
@@ -51,9 +51,9 @@ namespace BasilLang
                 this.right = right;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitBinaryExpr(this);
+                return visitor.VisitBinaryExpr(this);
             }
 
             public readonly Expr left;
@@ -68,9 +68,9 @@ namespace BasilLang
                 this.expression = expression;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitGroupingExpr(this);
+                return visitor.VisitGroupingExpr(this);
             }
 
             public readonly Expr expression;
@@ -83,9 +83,9 @@ namespace BasilLang
                 this.value = value;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitLiteralExpr(this);
+                return visitor.VisitLiteralExpr(this);
             }
 
             public readonly object value;
@@ -99,9 +99,9 @@ namespace BasilLang
                 this.right = right;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitUnaryExpr(this);
+                return visitor.VisitUnaryExpr(this);
             }
 
             public readonly Token op;
@@ -115,9 +115,9 @@ namespace BasilLang
                 this.name = name;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitVariableExpr(this);
+                return visitor.VisitVariableExpr(this);
             }
 
             public readonly Token name;
@@ -133,9 +133,9 @@ namespace BasilLang
                 this.right = right;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitLogicalExpr(this);
+                return visitor.VisitLogicalExpr(this);
             }
 
             public readonly Expr left;
@@ -152,9 +152,9 @@ namespace BasilLang
                 this.arguments = arguments;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitCallExpr(this);
+                return visitor.VisitCallExpr(this);
             }
 
             public readonly Expr callee;

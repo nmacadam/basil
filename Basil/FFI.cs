@@ -14,12 +14,12 @@ namespace BasilLang.NFI
     {
         public string MethodName => "sayHi";
 
-        public int arity()
+        public int Arity()
         {
             return 1;
         }
 
-        public object call(Interpreter interpreter, List<object> arguments)
+        public object Call(Interpreter interpreter, List<object> arguments)
         {
             Console.WriteLine("Hello, " + arguments[0].ToString());
             return null;

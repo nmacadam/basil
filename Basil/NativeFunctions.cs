@@ -18,12 +18,12 @@ namespace BasilLang
         {
             public string MethodName => "clock";
 
-            public int arity()
+            public int Arity()
             {
                 return 0;
             }
 
-            public object call(Interpreter interpreter, List<object> arguments)
+            public object Call(Interpreter interpreter, List<object> arguments)
             {
                 return (string)System.DateTime.Now.ToString("hh:mm tt");
             }
@@ -34,12 +34,12 @@ namespace BasilLang
         {
             public string MethodName => "tick";
 
-            public int arity()
+            public int Arity()
             {
                 return 0;
             }
 
-            public object call(Interpreter interpreter, List<object> arguments)
+            public object Call(Interpreter interpreter, List<object> arguments)
             {
                 return (double)System.Environment.TickCount / 1000.0;
             }
@@ -50,12 +50,12 @@ namespace BasilLang
         {
             public string MethodName => "print";
 
-            public int arity()
+            public int Arity()
             {
                 return 1;
             }
 
-            public object call(Interpreter interpreter, List<object> arguments)
+            public object Call(Interpreter interpreter, List<object> arguments)
             {
                 Console.WriteLine(arguments[0].ToString());
                 return null;
@@ -67,12 +67,12 @@ namespace BasilLang
         {
             public string MethodName => "read";
 
-            public int arity()
+            public int Arity()
             {
                 return 0;
             }
 
-            public object call(Interpreter interpreter, List<object> arguments)
+            public object Call(Interpreter interpreter, List<object> arguments)
             {
                 var input = Console.ReadLine();
 
@@ -96,12 +96,12 @@ namespace BasilLang
         {
             public string MethodName => "getType";
 
-            public int arity()
+            public int Arity()
             {
                 return 1;
             }
 
-            public object call(Interpreter interpreter, List<object> arguments)
+            public object Call(Interpreter interpreter, List<object> arguments)
             {
                 if (arguments[0] == null)
                 {

@@ -6,51 +6,51 @@ namespace BasilLang
     {
         public string print(Expr expression)
         {
-            return "[EXPR]:" + expression.accept(this);
+            return "[EXPR]:" + expression.Accept(this);
         }
 
-        public string visitAssignExpr(Expr.Assign expr)
+        public string VisitAssignExpr(Expr.Assign expr)
         {
             throw new System.NotImplementedException();
         }
 
-        public string visitBinaryExpr(Expr.Binary expr)
+        public string VisitBinaryExpr(Expr.Binary expr)
         {
-            return parenthesize(expr.op.lexeme, expr.left, expr.right);
+            return Parenthesize(expr.op.lexeme, expr.left, expr.right);
         }
 
-        public string visitCallExpr(Expr.Call expr)
+        public string VisitCallExpr(Expr.Call expr)
         {
             throw new System.NotImplementedException();
         }
 
-        public string visitGroupingExpr(Expr.Grouping expr)
+        public string VisitGroupingExpr(Expr.Grouping expr)
         {
-            return parenthesize("group", expr.expression);
+            return Parenthesize("group", expr.expression);
         }
 
-        public string visitLiteralExpr(Expr.Literal expr)
+        public string VisitLiteralExpr(Expr.Literal expr)
         {
             if (expr.value == null) return "nil";
             return expr.value.ToString();
         }
 
-        public string visitLogicalExpr(Expr.Logical expr)
+        public string VisitLogicalExpr(Expr.Logical expr)
         {
             throw new System.NotImplementedException();
         }
 
-        public string visitUnaryExpr(Expr.Unary expr)
+        public string VisitUnaryExpr(Expr.Unary expr)
         {
-            return parenthesize(expr.op.lexeme, expr.right);
+            return Parenthesize(expr.op.lexeme, expr.right);
         }
 
-        public string visitVariableExpr(Expr.Variable expr)
+        public string VisitVariableExpr(Expr.Variable expr)
         {
             return expr.name.ToString();
         }
 
-        private string parenthesize(string name, params Expr[] exprs)
+        private string Parenthesize(string name, params Expr[] exprs)
         {
             StringBuilder builder = new StringBuilder();
 
@@ -58,7 +58,7 @@ namespace BasilLang
             foreach (var expr in exprs)
             {
                 builder.Append(" ");
-                builder.Append(expr.accept(this));
+                builder.Append(expr.Accept(this));
             }
             builder.Append(")");
 

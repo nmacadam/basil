@@ -19,20 +19,20 @@ namespace BasilLang
             this.enclosing = enclosing;
         }
 
-        public object get(Token name)
+        public object Get(Token name)
         {
             if (values.ContainsKey(name.lexeme))
             {
                 return values[name.lexeme];
             }
 
-            if (enclosing != null) return enclosing.get(name);
+            if (enclosing != null) return enclosing.Get(name);
 
             throw new RuntimeError(name,
                 "Undefined variable '" + name.lexeme + "'.");
         }
 
-        public void assign(Token name, Object value)
+        public void Assign(Token name, Object value)
         {
             if (values.ContainsKey(name.lexeme))
             {
@@ -43,7 +43,7 @@ namespace BasilLang
 
             if (enclosing != null)
             {
-                enclosing.assign(name, value);
+                enclosing.Assign(name, value);
                 return;
             }
 
@@ -51,7 +51,7 @@ namespace BasilLang
                 "Undefined variable '" + name.lexeme + "'.");
         }
 
-        public void define(string name, object value)
+        public void Define(string name, object value)
         {
             //values.Add(name, value);
 

@@ -6,20 +6,20 @@ namespace BasilLang
     {
         public interface Visitor<R>
         {
-            R visitBlockStmt(Block stmt);
+            R VisitBlockStmt(Block stmt);
             //R visitClassStmt(Class stmt);
-            R visitExpressionStmt(Expression stmt);
-            R visitFunctionStmt(Function stmt);
-            R visitIfStmt(If stmt);
-            R visitPrintStmt(Print stmt);
-            R visitReturnStmt(Return stmt);
-            R visitVarStmt(Var stmt);
-            R visitWhileStmt(While stmt);
+            R VisitExpressionStmt(Expression stmt);
+            R VisitFunctionStmt(Function stmt);
+            R VisitIfStmt(If stmt);
+            R VisitPrintStmt(Print stmt);
+            R VisitReturnStmt(Return stmt);
+            R VisitVarStmt(Var stmt);
+            R VisitWhileStmt(While stmt);
         }
 
         // Nested Stmt classes here...            
 
-        public abstract R accept<R>(Visitor<R> visitor);
+        public abstract R Accept<R>(Visitor<R> visitor);
 
         public class Block : Stmt
         {
@@ -28,9 +28,9 @@ namespace BasilLang
                 this.statements = statement;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitBlockStmt(this);
+                return visitor.VisitBlockStmt(this);
             }
 
             public readonly List<Stmt> statements;
@@ -43,9 +43,9 @@ namespace BasilLang
                 this.expression = expression;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitExpressionStmt(this);
+                return visitor.VisitExpressionStmt(this);
             }
 
             public readonly Expr expression;
@@ -58,9 +58,9 @@ namespace BasilLang
                 this.expression = expression;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitPrintStmt(this);
+                return visitor.VisitPrintStmt(this);
             }
 
             public readonly Expr expression;
@@ -74,9 +74,9 @@ namespace BasilLang
                 this.initializer = initializer;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitVarStmt(this);
+                return visitor.VisitVarStmt(this);
             }
 
             public readonly Token name;
@@ -92,9 +92,9 @@ namespace BasilLang
                 this.elseBranch = elseBranch;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitIfStmt(this);
+                return visitor.VisitIfStmt(this);
             }
 
             public readonly Expr condition;
@@ -110,9 +110,9 @@ namespace BasilLang
                 this.body = body;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitWhileStmt(this);
+                return visitor.VisitWhileStmt(this);
             }
 
             public readonly Expr condition;
@@ -128,9 +128,9 @@ namespace BasilLang
                 this.body = body;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitFunctionStmt(this);
+                return visitor.VisitFunctionStmt(this);
             }
 
             public readonly Token name;
@@ -146,9 +146,9 @@ namespace BasilLang
                 this.value = value;
             }
 
-            public override R accept<R>(Visitor<R> visitor)
+            public override R Accept<R>(Visitor<R> visitor)
             {
-                return visitor.visitReturnStmt(this);
+                return visitor.VisitReturnStmt(this);
             }
 
             public readonly Token keyword;
