@@ -2,6 +2,7 @@
 a dynamically typed, interpreted scripting language (and C# interpreter!)
 
 ### ⚗ interpreter features
+- native function interface
 - preprocessing
 - lexical analysis
 - parsing
