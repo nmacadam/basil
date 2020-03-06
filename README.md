@@ -7,6 +7,7 @@ a dynamically typed, interpreted scripting language (and C# interpreter!)
 - parsing
 - intermediate code generation
 - optimization
+- code generation
 
 ### language features
 - dynamic typing
