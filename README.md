@@ -1,7 +1,7 @@
 # basil
 a dynamically typed, interpreted scripting language (and C# interpreter!)
 
-### interpreter features
+### ⚗ interpreter features
 - preprocessing
 - lexical analysis
 - parsing
@@ -9,7 +9,7 @@ a dynamically typed, interpreted scripting language (and C# interpreter!)
 - optimization
 - code generation
 
-### language features
+### 💭 language features
 - dynamic typing
 - automatic memory management
 - data types
@@ -21,7 +21,7 @@ a dynamically typed, interpreted scripting language (and C# interpreter!)
 - classes
 - inheritance
 
-### examples
+### 📝 examples
 ```javascript
 // fizzbuzz
 fun fizzbuzz(start, end)
