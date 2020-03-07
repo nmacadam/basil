@@ -298,5 +298,15 @@ namespace BasilLang
             Resolve(stmt.body);
             return null;
         }
+
+        public object VisitBreakStmt(Stmt.Break stmt)
+        {
+            return null;
+        }
+
+        public object VisitContinueStmt(Stmt.Continue stmt)
+        {
+            return null;
+        }
     }
 }

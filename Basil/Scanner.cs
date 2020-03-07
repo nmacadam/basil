@@ -45,11 +45,24 @@ namespace BasilLang
                 //case ']': addToken(Token.TokenType.RightBracket); break;
                 case ',': AddToken(Token.TokenType.Comma); break;
                 case '.': AddToken(Token.TokenType.Dot); break;
-                case '-': AddToken(Token.TokenType.Minus); break;
-                case '+': AddToken(Token.TokenType.Plus); break;
+                //case '-': AddToken(Token.TokenType.Minus); break;
+                //case '+': AddToken(Token.TokenType.Plus); break;
                 case ';': AddToken(Token.TokenType.Semicolon); break;
-                case '*': AddToken(Token.TokenType.Star); break;
-                case '%': AddToken(Token.TokenType.Percent); break;
+                //case '*': AddToken(Token.TokenType.Star); break;
+                //case '%': AddToken(Token.TokenType.Percent); break;
+
+                case '-':
+                    if (Match('-')) AddToken(Token.TokenType.MinusMinus);
+                    else if (Match('=')) AddToken(Token.TokenType.MinusEqual);
+                    else AddToken(Token.TokenType.Minus);
+                    break;
+                case '+':
+                    if (Match('+')) AddToken(Token.TokenType.PlusPlus);
+                    else if (Match('=')) AddToken(Token.TokenType.PlusEqual);
+                    else AddToken(Token.TokenType.Plus);
+                    break;
+                case '*': AddToken(Match('=') ? Token.TokenType.StarEqual : Token.TokenType.Minus); break;
+                case '%': AddToken(Match('=') ? Token.TokenType.PercentEqual : Token.TokenType.Minus); break;
 
                 //case '?': addToken(Token.TokenType.If); break;
                 //case '|': addToken(Token.TokenType.Else); break;
@@ -64,6 +77,25 @@ namespace BasilLang
                     {
                         // A comment goes until the end of the line.                
                         while (Peek() != '\n' && !IsAtEnd()) Advance();
+                    }
+                    else if (Match('*'))
+                    {
+                        // A comment goes until the end of the block                
+                        while (!IsAtEnd())
+                        {
+                            if (Peek() == '*' && PeekNext() == '/')
+                            {
+                                Advance();
+                                Advance();
+                                break;
+                            }
+
+                            Advance();
+                        }
+                    }
+                    else if (Match('='))
+                    {
+                        AddToken(Token.TokenType.SlashEqual);
                     }
                     else
                     {
@@ -232,22 +264,24 @@ namespace BasilLang
         // keyword mapping to token type
         private static readonly Dictionary<string, Token.TokenType> keywords = new Dictionary<string, Token.TokenType>
         {
-            {"and",    Token.TokenType.And    },
-            {"class",  Token.TokenType.Class  },
-            {"else",   Token.TokenType.Else   },
-            {"false",  Token.TokenType.False  },
-            {"for",    Token.TokenType.For    },
-            {"fun",    Token.TokenType.Fun    },
-            {"if",     Token.TokenType.If     },
-            {"nil",    Token.TokenType.Nil    },
-            {"or",     Token.TokenType.Or     },
-            {"print",  Token.TokenType.Print  },
-            {"return", Token.TokenType.Return },
-            {"super",  Token.TokenType.Super  },
-            {"this",   Token.TokenType.This   },
-            {"true",   Token.TokenType.True   },
-            {"var",    Token.TokenType.Var    },
-            {"while",  Token.TokenType.While  }
+            {"and",         Token.TokenType.And         },
+            {"break",       Token.TokenType.Break       },
+            {"class",       Token.TokenType.Class       },
+            {"continue",    Token.TokenType.Continue    },
+            {"else",        Token.TokenType.Else        },
+            {"false",       Token.TokenType.False       },
+            {"for",         Token.TokenType.For         },
+            {"fun",         Token.TokenType.Fun         },
+            {"if",          Token.TokenType.If          },
+            {"nil",         Token.TokenType.Nil         },
+            {"or",          Token.TokenType.Or          },
+            {"print",       Token.TokenType.Print       },
+            {"return",      Token.TokenType.Return      },
+            {"super",       Token.TokenType.Super       },
+            {"this",        Token.TokenType.This        },
+            {"true",        Token.TokenType.True        },
+            {"var",         Token.TokenType.Var         },
+            {"while",       Token.TokenType.While       }
         };
     }
 }

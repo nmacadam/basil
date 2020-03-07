@@ -17,6 +17,7 @@ namespace BasilLang
 
         private readonly List<Token> tokens;
         private int current = 0;
+        private int loopDepth = 0;
 
         public Parser(List<Token> tokens)
         {
@@ -87,12 +88,21 @@ namespace BasilLang
 
         private Stmt WhileStatement()
         {
-            Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'while'.");
-            Expr condition = Expression();
-            Consume(Token.TokenType.RightParenthesis, "Expect ')' after condition.");
-            Stmt body = Statement();
+            loopDepth++;
 
-            return new Stmt.While(condition, body);
+            try
+            {
+                Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'while'.");
+                Expr condition = Expression();
+                Consume(Token.TokenType.RightParenthesis, "Expect ')' after condition.");
+                Stmt body = Statement();
+
+                return new Stmt.While(condition, body);
+            }
+            finally
+            {
+                loopDepth--;
+            }
         }
 
         private Expr Expression()
@@ -103,6 +113,8 @@ namespace BasilLang
         // parse individual statements
         private Stmt Statement()
         {
+            if (Match(Token.TokenType.Break)) return BreakStatement();
+            if (Match(Token.TokenType.Continue)) return ContinueStatement();
             if (Match(Token.TokenType.For)) return ForStatement();
             if (Match(Token.TokenType.If)) return IfStatement();
             if (Match(Token.TokenType.Print)) return PrintStatement();
@@ -113,67 +125,101 @@ namespace BasilLang
             return ExpressionStatement();
         }
 
+        private Stmt BreakStatement()
+        {
+            if (loopDepth == 0)
+            {
+                Error(Previous(), "Cannot use 'continue' outside of a loop.");
+            }
+
+            Consume(Token.TokenType.Semicolon, "Expect ';' after break.");
+
+            return new Stmt.Break();
+        }
+
+        private Stmt ContinueStatement()
+        {
+            if (loopDepth == 0)
+            {
+                Error(Previous(), "Cannot use 'continue' outside of a loop.");
+            }
+
+            Consume(Token.TokenType.Semicolon, "Expect ';' after continue.");
+
+            return new Stmt.Continue();
+        }
+
         // our first desugaring
         private Stmt ForStatement()
         {
-            Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'for'.");
+            loopDepth++;
 
-            Stmt initializer;
-            if (Match(Token.TokenType.Semicolon))
+            try
             {
-                initializer = null;
-            }
-            else if (Match(Token.TokenType.Var))
-            {
-                initializer = VarDeclaration();
-            }
-            else
-            {
-                initializer = ExpressionStatement();
-            }
+                Consume(Token.TokenType.LeftParenthesis, "Expect '(' after 'for'.");
 
-            Expr condition = null;
-            if (!Check(Token.TokenType.Semicolon))
-            {
-                condition = Expression();
-            }
-            Consume(Token.TokenType.Semicolon, "Expect ';' after loop condition.");
+                Stmt initializer;
+                if (Match(Token.TokenType.Semicolon))
+                {
+                    initializer = null;
+                }
+                else if (Match(Token.TokenType.Var))
+                {
+                    initializer = VarDeclaration();
+                }
+                else
+                {
+                    initializer = ExpressionStatement();
+                }
 
-            Expr increment = null;
-            if (!Check(Token.TokenType.RightParenthesis))
-            {
-                increment = Expression();
-            }
-            Consume(Token.TokenType.RightParenthesis, "Expect ')' after for clauses.");
+                Expr condition = null;
+                if (!Check(Token.TokenType.Semicolon))
+                {
+                    condition = Expression();
+                }
+                Consume(Token.TokenType.Semicolon, "Expect ';' after loop condition.");
 
-            Stmt body = Statement();
+                Expr increment = null;
+                if (!Check(Token.TokenType.RightParenthesis))
+                {
+                    increment = Expression();
+                }
+                Consume(Token.TokenType.RightParenthesis, "Expect ')' after for clauses.");
 
-            if (increment != null)
-            {
-                body = new Stmt.Block(
-                    new List<Stmt>()
-                    {
+                Stmt body = Statement();
+
+                if (increment != null)
+                {
+                    body = new Stmt.Block(
+                        new List<Stmt>()
+                        {
                         body,
                         new Stmt.Expression(increment)
-                    }
-                );
-            }
+                        }
+                    );
+                }
 
-            if (condition == null) condition = new Expr.Literal(true);
-            body = new Stmt.While(condition, body);
+                if (condition == null) condition = new Expr.Literal(true);
+                body = new Stmt.While(condition, body);
 
-            if (initializer != null)
-            {
-                body = new Stmt.Block(
-                    new List<Stmt>()
-                    {
+                if (initializer != null)
+                {
+                    body = new Stmt.Block(
+                        new List<Stmt>()
+                        {
                         initializer,
                         body
-                    }
-                );
-            }
+                        }
+                    );
+                }
 
-            return body;
+                return body;
+            }
+            finally
+            {
+                loopDepth--;
+            }
+            
         }
 
         private Stmt IfStatement()
@@ -260,22 +306,104 @@ namespace BasilLang
         private Expr Assignment()
         {
             Expr expr = Or();
-            if (Match(Token.TokenType.Equal))
+            if (Match(Token.TokenType.PlusPlus))
             {
-                Token equals = Previous();
-                Expr value = Assignment();
+                Token variable = Previous();
+
                 if (expr is Expr.Variable v)
                 {
                     Token name = v.name;
-                    return new Expr.Assign(name, value);
+                    return new Expr.Assign(name, 
+                        new Expr.Binary(expr, new Token(Token.TokenType.Plus, "+", null, variable.line), new Expr.Literal(1.0)));
                 }
                 else if (expr is Expr.Get)
                 {
                     Expr.Get get = (Expr.Get)expr;
-                    return new Expr.Set(get.Objekt, get.Name, value);
+                    return new Expr.Set(get.Objekt, get.Name, new Expr.Binary(expr, new Token(Token.TokenType.Plus, "+", null, variable.line), new Expr.Literal(1.0)));
+                }
+                Error(variable, "Invalid assignment target.");
+            }
+
+            if (Match(Token.TokenType.MinusMinus))
+            {
+                Token variable = Previous();
+
+                if (expr is Expr.Variable v)
+                {
+                    Token name = v.name;
+                    return new Expr.Assign(name,
+                        new Expr.Binary(expr, new Token(Token.TokenType.Plus, "+", null, variable.line), new Expr.Literal(-1.0)));
+                }
+                else if (expr is Expr.Get)
+                {
+                    Expr.Get get = (Expr.Get)expr;
+                    return new Expr.Set(get.Objekt, get.Name, new Expr.Binary(expr, new Token(Token.TokenType.Plus, "+", null, variable.line), new Expr.Literal(-1.0)));
+                }
+                Error(variable, "Invalid assignment target.");
+            }
+
+            if (Match(Token.TokenType.Equal, Token.TokenType.MinusEqual, Token.TokenType.PlusEqual, 
+                Token.TokenType.StarEqual, Token.TokenType.SlashEqual, Token.TokenType.PercentEqual,
+                Token.TokenType.PlusPlus))
+            {
+                Token equals = Previous();
+                Expr tempValue = Assignment();
+                Expr assignedValue = tempValue;
+
+                switch (equals.type)
+                {
+                    case Token.TokenType.Equal: break;
+                    case Token.TokenType.MinusEqual:
+                        assignedValue = new Expr.Binary(expr, new Token(Token.TokenType.Minus, "-", null, equals.line), tempValue);
+                        break;
+                    case Token.TokenType.PlusEqual:
+                        assignedValue = new Expr.Binary(expr, new Token(Token.TokenType.Plus, "+", null, equals.line), tempValue);
+                        break;
+                    case Token.TokenType.StarEqual:
+                        assignedValue = new Expr.Binary(expr, new Token(Token.TokenType.Star, "*", null, equals.line), tempValue);
+                        break;
+                    case Token.TokenType.SlashEqual:
+                        assignedValue = new Expr.Binary(expr, new Token(Token.TokenType.Slash, "/", null, equals.line), tempValue);
+                        break;
+                    case Token.TokenType.PercentEqual:
+                        assignedValue = new Expr.Binary(expr, new Token(Token.TokenType.Percent, "%", null, equals.line), tempValue);
+                        break;
+
+                    default: Basil.Error(Previous().line, "Tried to create assignment statement but tokens were invalid.");
+                        break;
+                }
+
+                if (expr is Expr.Variable v)
+                {
+                    Token name = v.name;
+                    return new Expr.Assign(name, assignedValue);
+                }
+                else if (expr is Expr.Get)
+                {
+                    Expr.Get get = (Expr.Get)expr;
+                    return new Expr.Set(get.Objekt, get.Name, assignedValue);
                 }
                 Error(equals, "Invalid assignment target.");
             }
+            //else if (Match(Token.TokenType.MinusEqual))
+            //{
+            //    Token equals = Previous();
+            //    Expr value = Assignment();
+            //    // replace assignment expression with (expr - value)
+            //    Expr minusEquals = new Expr.Binary(expr, new Token(Token.TokenType.Minus, "-", null, equals.line), value);
+            //    if (expr is Expr.Variable v)
+            //    {
+            //        Token name = v.name;
+                    
+            //        return new Expr.Assign(name, minusEquals);
+            //    }
+            //    else if (expr is Expr.Get)
+            //    {
+            //        Expr.Get get = (Expr.Get)expr;
+            //        return new Expr.Set(get.Objekt, get.Name, minusEquals);
+            //    }
+            //    Error(equals, "Invalid assignment target.");
+            //}
             return expr;
         }
 
@@ -427,6 +555,25 @@ namespace BasilLang
         // this is the highest level of precedence
         private Expr Primary()
         {
+            //if (Match(Token.TokenType.PlusPlus))
+            //{
+            //    var expr = new Expr.Assign(Previous(), new Expr.Literal(Previous().literal));
+
+            //    Console.WriteLine(new ASTPrinter().print(expr));
+            //    Console.WriteLine("hecking");
+
+            //    return expr;
+
+            //    //new Expr.Binary(Previous(), new Token(Token.TokenType.Minus, "-", null, equals.line), tempValue);
+
+            //    //return new Expr.Literal(((double)Previous().literal) + 1);
+            //}
+
+            //if (Match(Token.TokenType.MinusMinus))
+            //{
+            //    return new Expr.Literal(((double)Previous().literal) - 1);
+            //}
+
             if (Match(Token.TokenType.False)) return new Expr.Literal(false);
             if (Match(Token.TokenType.True)) return new Expr.Literal(true);
             if (Match(Token.TokenType.Nil)) return new Expr.Literal(null);

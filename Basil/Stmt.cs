@@ -7,7 +7,9 @@ namespace BasilLang
         public interface IStmtVisitor<R>
         {
             R VisitBlockStmt(Block stmt);
+            R VisitBreakStmt(Break stmt);
             R VisitClassStmt(Class stmt);
+            R VisitContinueStmt(Continue stmt);
             R VisitExpressionStmt(Expression stmt);
             R VisitFunctionStmt(Function stmt);
             R VisitIfStmt(If stmt);
@@ -170,6 +172,22 @@ namespace BasilLang
             public override T Accept<T>(IStmtVisitor<T> visitor)
             {
                 return visitor.VisitClassStmt(this);
+            }
+        }
+
+        public class Break : Stmt
+        {
+            public override T Accept<T>(IStmtVisitor<T> visitor)
+            {
+                return visitor.VisitBreakStmt(this);
+            }
+        }
+
+        public class Continue : Stmt
+        {
+            public override T Accept<T>(IStmtVisitor<T> visitor)
+            {
+                return visitor.VisitContinueStmt(this);
             }
         }
     }

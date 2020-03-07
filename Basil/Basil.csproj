@@ -48,6 +48,8 @@
     <Compile Include="BasilClass.cs" />
     <Compile Include="BasilFunction.cs" />
     <Compile Include="BasilInstance.cs" />
+    <Compile Include="BreakException.cs" />
+    <Compile Include="ContinueException.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Expr.cs" />
     <Compile Include="FFI.cs" />

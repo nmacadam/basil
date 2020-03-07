@@ -13,12 +13,14 @@
 
             // One or two character tokens
             Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
+            PlusEqual, MinusEqual, SlashEqual, StarEqual, PercentEqual,
+            PlusPlus, MinusMinus,
 
             // Literals
             Identifier, String, Number,
 
             // Keywords
-            And, Class, Else, False, Fun, For, If, Nil, Or, Print, Return, Super, This, True, Var, While, EOF
+            And, Break, Class, Continue, Else, False, Fun, For, If, Nil, Or, Print, Return, Super, This, True, Var, While, EOF
         }
 
         public readonly TokenType type;

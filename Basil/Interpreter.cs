@@ -399,7 +399,20 @@ namespace BasilLang
         {
             while (IsTruthy(Evaluate(stmt.condition)))
             {
-                Execute(stmt.body);
+                try
+                {
+                    Execute(stmt.body);
+                }
+                catch (BreakException)
+                {
+                    // Break out of the loop;
+                    break;
+                }
+                catch (ContinueException)
+                {
+                    // Continue the next iteration
+                    continue;
+                }
             }
             return null;
         }
@@ -450,6 +463,16 @@ namespace BasilLang
             if (stmt.value != null) value = Evaluate(stmt.value);
 
             throw new Return(value);
+        }
+
+        public object VisitBreakStmt(Stmt.Break stmt)
+        {
+            throw new BreakException();
+        }
+
+        public object VisitContinueStmt(Stmt.Continue stmt)
+        {
+            throw new ContinueException();
         }
     }
 }
