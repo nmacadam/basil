@@ -80,7 +80,11 @@ namespace BasilLang.NFI
 ### 🚋 roadmap
 - finalize basic language syntax
 - add switch statements
+- fix continue keyword for for loops
 - add list and map types
+- add function overloading
+- create a serviceable standard library
+- optimize tokenizing
 - optimize interpreter
 - create some tools for using Basil
 ___
