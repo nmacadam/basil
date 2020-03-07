@@ -77,7 +77,7 @@ namespace BasilLang.NFI
 
 ```
 
-### 🚋 Roadmap
+### 🚋 roadmap
 - finalize basic language syntax
 - add switch statements
 - add list and map types
