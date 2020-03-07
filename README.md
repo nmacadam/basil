@@ -51,7 +51,7 @@ Creating Basil functions in C# looks like...
 ```csharp
 namespace BasilLang.NFI
 {
-    // The NativeFunction attribute tells the interpreter to add this to it's Basil function library
+    // The NativeFunction attribute tells the interpreter to add this to its Basil function library
 
     [NativeFunction]
     public class SayHiFunction : NativeCallable
