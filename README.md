@@ -34,7 +34,7 @@ Also, [writing an interpreter](https://craftinginterpreters.com/) and designing 
 // fizzbuzz
 fun fizzbuzz(start, end)
 {
-    for (var i = 0; i < end; i = i + 1)
+    for (var i = 0; i < end; i++)
     {
         if (i % 3 == 0 and i % 5 == 0) print "FizzBuzz";
         else if (i % 3 == 0) print "Fizz";
