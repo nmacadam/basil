@@ -10,18 +10,7 @@ namespace BasilLang
         static bool hadError = false;
         static bool hadRuntimeError = false;
 
-        static void Main(string[] args)
-        {
-            //RunPrompt();
-            RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\incrementing.bsl");
-            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\compoundAssignment.bsl");
-            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\assignment.bsl");
-            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\benchmark.bsl");
-            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\cake.bsl");
-            //RunFile(@"C:\Users\nkmac\Desktop\basil-master\Basil\superclass.bsl");
-        }
-
-        private static void RunPrompt()
+        public static void RunPrompt()
         {
             for (; ; )
             {
@@ -31,7 +20,7 @@ namespace BasilLang
             }
         }
 
-        private static void RunFile(string path)
+        public static void RunFile(string path)
         {
             string text = System.IO.File.ReadAllText(path);
 
